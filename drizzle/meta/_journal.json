@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1770291505282,
+      "tag": "0000_abandoned_silhouette",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1770292251689,
+      "tag": "0001_eager_morbius",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1770293558313,
+      "tag": "0002_wakeful_hex",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1770293958196,
+      "tag": "0003_parallel_tag",
+      "breakpoints": true
+    }
+  ]
+}

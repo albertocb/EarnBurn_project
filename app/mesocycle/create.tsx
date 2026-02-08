@@ -1,0 +1,126 @@
+import { Stack, useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Button } from '../../src/components/common/Button';
+import { Select } from '../../src/components/common/Select';
+import { Slider } from '../../src/components/common/Slider';
+import { useProgramStore } from '../../src/store/programStore';
+import { useSelectionStore } from '../../src/store/selectionStore';
+import { Focus, Mesocycle } from '../../src/store/types';
+import { colors, spacing, typography } from '../../src/theme/theme';
+
+export default function CreateMesocycle() {
+    const router = useRouter();
+    const { activeMacrocycleId, addMesocycle } = useProgramStore();
+    const { selectedExerciseIds, clearSelection } = useSelectionStore();
+
+    const [weeks, setWeeks] = useState(4);
+    const [focus, setFocus] = useState<Focus>('Hypertrophy');
+    const [progression, setProgression] = useState('Linear');
+    const [autoDeload, setAutoDeload] = useState(true);
+    const [rir, setRir] = useState(2); // Mock: Target RIR
+
+    useEffect(() => {
+        clearSelection();
+    }, []);
+
+    const handleSave = () => {
+        if (!activeMacrocycleId) return;
+
+        const newMeso: Mesocycle = {
+            id: Date.now().toString(),
+            name: `${focus} Block`,
+            weeks,
+            focus,
+            progressionModel: progression as any,
+            autoDeload,
+            volumeRamp: true, // simplified
+            exercises: selectedExerciseIds,
+        };
+
+        addMesocycle(activeMacrocycleId, newMeso);
+        router.back();
+    };
+
+    return (
+        <SafeAreaView style={styles.container}>
+            <Stack.Screen options={{ title: 'Add Mesocycle', headerBackTitle: 'Cancel' }} />
+            <ScrollView contentContainerStyle={styles.content}>
+
+                <Select
+                    label="Focus"
+                    value={focus}
+                    onChange={(v) => setFocus(v as Focus)}
+                    options={[
+                        { label: 'Hypertrophy', value: 'Hypertrophy' },
+                        { label: 'Strength', value: 'Strength' },
+                        { label: 'Peaking', value: 'Peaking' },
+                    ]}
+                />
+
+                <Slider
+                    label="Length"
+                    value={weeks}
+                    min={4}
+                    max={8}
+                    unit=" Weeks"
+                    onValueChange={setWeeks}
+                />
+
+                <Select
+                    label="Progression Model"
+                    value={progression}
+                    onChange={setProgression}
+                    options={[
+                        { label: 'Linear', value: 'Linear' },
+                        { label: 'Double', value: 'Double Progression' },
+                        { label: 'RPE Stop', value: 'RPE Stop' },
+                    ]}
+                />
+
+                <Slider
+                    label="Target RIR (Reps In Reserve)"
+                    value={rir}
+                    min={0}
+                    max={4}
+                    unit=" RIR"
+                    onValueChange={setRir}
+                />
+
+                <View style={styles.row}>
+                    <Text style={styles.label}>Auto Deload Week</Text>
+                    <Switch
+                        value={autoDeload}
+                        onValueChange={setAutoDeload}
+                        trackColor={{ false: colors.surfaceHighlight, true: colors.primary }}
+                    />
+                </View>
+
+                <View style={styles.section}>
+                    <Text style={styles.label}>Exercises</Text>
+                    <Text style={styles.selectionCount}>
+                        {selectedExerciseIds.length} Selected
+                    </Text>
+                    <Button
+                        title="Select Exercises"
+                        onPress={() => router.push('/mesocycle/exercises')}
+                        variant="secondary"
+                    />
+                </View>
+
+                <View style={{ height: 20 }} />
+                <Button title="Add to Plan" onPress={handleSave} />
+            </ScrollView>
+        </SafeAreaView>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    content: { padding: spacing.l },
+    row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.m },
+    label: { ...typography.body, color: colors.textSecondary },
+    section: { marginBottom: spacing.m },
+    selectionCount: { ...typography.bodyBold, color: colors.primary, marginBottom: spacing.s, marginTop: spacing.xs },
+});

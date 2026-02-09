@@ -5,7 +5,6 @@ import { ActivityIndicator, Text, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { TimerBar } from '../src/components/TimerBar';
 import { useRunMigrations } from '../src/db/migrations';
-import { workoutDayStatusRepository } from '../src/repositories/workoutDayStatusRepository';
 import { useProgramStore } from '../src/store/programStore';
 import { useUserStore } from '../src/store/userStore';
 import { colors } from '../src/theme/theme';
@@ -18,8 +17,7 @@ export default function RootLayout() {
             // Initialize stores once DB is ready
             useUserStore.getState().init();
             useProgramStore.getState().init();
-            // Ensure workout day status table exists (manual init)
-            workoutDayStatusRepository.ensureTable().catch(e => console.error("Failed to init status table", e));
+
         }
     }, [success]);
 
@@ -28,6 +26,9 @@ export default function RootLayout() {
             <SafeAreaProvider>
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
                     <Text style={{ color: colors.error }}>Migration Error: {error.message}</Text>
+                    <Text style={{ color: colors.textDim, fontSize: 10, marginTop: 10, padding: 20 }}>
+                        {JSON.stringify(error, null, 2)}
+                    </Text>
                 </View>
             </SafeAreaProvider>
         );

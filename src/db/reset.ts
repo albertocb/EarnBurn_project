@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import { db } from './client';
 import {
     athleteProfile,
@@ -9,7 +10,6 @@ import {
     plannedSessions,
     plannedSetSchemes,
     setEntries,
-    workoutDayStatus,
     workoutSessions
 } from './schema';
 
@@ -19,7 +19,9 @@ export const resetDatabase = async () => {
             // Delete in order of dependencies (child first)
             await tx.delete(setEntries);
             await tx.delete(workoutSessions);
-            await tx.delete(workoutDayStatus); // Added workoutDayStatus to clear list
+            await tx.delete(workoutSessions);
+            // Drop workout_day_status to ensure clean schema recreation on next launch
+            await tx.run(sql`DROP TABLE IF EXISTS workout_day_status`);
 
             await tx.delete(plannedSetSchemes);
             await tx.delete(plannedExercises);

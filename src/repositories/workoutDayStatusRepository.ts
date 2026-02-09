@@ -1,4 +1,4 @@
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { db } from '../db/client';
 import { workoutDayStatus } from '../db/schema';
 
@@ -12,20 +12,8 @@ export interface WorkoutDayStatusData {
 }
 
 export const workoutDayStatusRepository = {
-    ensureTable: async () => {
-        // Init table manually to avoid migration complexity for this MVP feature
-        await db.run(sql`
-            CREATE TABLE IF NOT EXISTS workout_day_status (
-                week TEXT NOT NULL,
-                day_id TEXT NOT NULL,
-                status TEXT NOT NULL,
-                total_exercises INTEGER NOT NULL,
-                completed_exercises INTEGER NOT NULL,
-                completed_at TEXT NOT NULL,
-                PRIMARY KEY (week, day_id)
-            );
-        `);
-    },
+    // database migration now handles table creation
+    // ensureTable removed
 
     setDayStatus: async (data: WorkoutDayStatusData) => {
         await db.insert(workoutDayStatus)

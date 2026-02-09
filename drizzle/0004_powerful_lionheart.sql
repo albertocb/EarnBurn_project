@@ -1,4 +1,4 @@
-CREATE TABLE `workout_day_status` (
+CREATE TABLE IF NOT EXISTS `workout_day_status` (
 	`week` text NOT NULL,
 	`day_id` text NOT NULL,
 	`status` text NOT NULL,

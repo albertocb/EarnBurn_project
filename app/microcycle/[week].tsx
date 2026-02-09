@@ -64,8 +64,8 @@ const generatePlan = (
     const setsPerSession = Math.max(isDeload ? 1 : 2, Math.round(weeklySets / sessions));
     const repRange = volumePreset === 'Hypertrophy' ? '8-12' : '4-6';
 
-    // Deload RIR: Easiear (3-5 RIR) vs Normal (2-3 RIR)
-    const rir = isDeload ? '4-5 RIR' : (volumePreset === 'Hypertrophy' ? '2 RIR' : '3 RIR');
+    // Deload RIR: Easiear (3 RIR) vs Normal (2-3 RIR) - Max 3 enforced
+    const rir = isDeload ? '3 RIR' : (volumePreset === 'Hypertrophy' ? '2 RIR' : '3 RIR');
 
     const prescription = `${setsPerSession} sets • ${repRange} reps @ ${rir}`;
 

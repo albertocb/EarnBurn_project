@@ -124,7 +124,7 @@ export default function CreateMesocycle() {
                     label="Target RIR (Reps In Reserve)"
                     value={rir}
                     min={0}
-                    max={4}
+                    max={3}
                     unit=" RIR"
                     onValueChange={setRir}
                 />

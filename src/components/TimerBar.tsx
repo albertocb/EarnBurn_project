@@ -72,18 +72,18 @@ export const TimerBar = () => {
 const styles = StyleSheet.create({
     container: {
         position: 'absolute',
-        right: 16,
+        right: 150,
         alignItems: 'flex-end',
         zIndex: 9999,
     },
     square: {
         width: 72,
-        height: 72,
+        height: 23,
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 4,
-        borderRadius: 16, // Rounded square
-        borderWidth: 2,
+        padding: 0, // Minimized padding
+        borderRadius: 5,
+        borderWidth: 1,
         // Shadow
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
@@ -93,8 +93,11 @@ const styles = StyleSheet.create({
     },
     timeText: {
         ...typography.bodyBold,
-        fontSize: 13,
+        fontSize: 14, // Slightly larger
+        lineHeight: 12, // Tight line height, close to font size
         textAlign: 'center',
+        textAlignVertical: 'center', // Android vertical center
+        includeFontPadding: false,   // Android remove extra padding
         fontVariant: ['tabular-nums'],
         width: '100%',
     },

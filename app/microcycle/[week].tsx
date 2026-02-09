@@ -1,14 +1,16 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../src/components/common/Button';
 import { Card } from '../../src/components/common/Card';
+import { exercises as allExercises } from '../../src/data/exercises';
+import { useProgramStore } from '../../src/store/programStore';
 import { useWorkoutDraftStore } from '../../src/store/workoutDraftStore';
 import { borderRadius, colors, spacing, typography } from '../../src/theme/theme';
 
-// --- Placeholder Data Types ---
+// --- Types ---
 interface Exercise {
     id: string;
     name: string;
@@ -30,91 +32,163 @@ interface WorkoutDay {
     exercises: ExerciseSlot[];
 }
 
-// --- Placeholder Data ---
-const PLACEHOLDER_PLAN: WorkoutDay[] = [
-    {
-        id: 'day-a',
-        name: 'Day A',
-        focus: 'Upper Body Focus',
-        exercises: [
-            {
-                id: 'ex-1',
-                primary: { id: 'bp', name: 'Barbell Bench Press', description: 'Compound • Chest • Barbell' },
-                alternatives: [
-                    { id: 'dbp', name: 'Dumbbell Bench Press', description: 'Compound • Chest • Dumbbell' },
-                    { id: 'mp', name: 'Machine Chest Press', description: 'Compound • Chest • Machine' },
-                ],
-                prescription: '3 sets • 5-8 reps @ 2 RIR',
-            },
-            {
-                id: 'ex-2',
-                primary: { id: 'row', name: 'Barbell Row', description: 'Compound • Back • Barbell' },
-                alternatives: [
-                    { id: 'db-row', name: 'Dumbbell Row', description: 'Compound • Back • Dumbbell' },
-                    { id: 'cable-row', name: 'Cable Row', description: 'Compound • Back • Cable' },
-                ],
-                prescription: '3 sets • 8-10 reps @ 2 RIR',
-            },
-            {
-                id: 'ex-3',
-                primary: { id: 'ohp', name: 'Overhead Press', description: 'Compound • Shoulders • Barbell' },
-                alternatives: [
-                    { id: 'db-ohp', name: 'Dumbbell Shoulder Press', description: 'Compound • Shoulders • Dumbbell' },
-                    { id: 'machine-ohp', name: 'Machine Shoulder Press', description: 'Compound • Shoulders • Machine' },
-                ],
-                prescription: '3 sets • 8-12 reps @ 1 RIR',
-            },
-        ],
-    },
-    {
-        id: 'day-b',
-        name: 'Day B',
-        focus: 'Lower Body Focus',
-        exercises: [
-            {
-                id: 'ex-4',
-                primary: { id: 'squat', name: 'Back Squat', description: 'Compound • Legs • Barbell' },
-                alternatives: [
-                    { id: 'leg-press', name: 'Leg Press', description: 'Compound • Legs • Machine' },
-                    { id: 'hack-squat', name: 'Hack Squat', description: 'Compound • Legs • Machine' },
-                ],
-                prescription: '3 sets • 5-8 reps @ 2 RIR',
-            },
-            {
-                id: 'ex-5',
-                primary: { id: 'rdl', name: 'Romanian Deadlift', description: 'Compound • Hamstrings • Barbell' },
-                alternatives: [
-                    { id: 'leg-curl', name: 'Seated Leg Curl', description: 'Isolation • Hamstrings • Machine' },
-                ],
-                prescription: '3 sets • 8-10 reps @ 2 RIR',
-            },
-        ],
-    },
-    {
-        id: 'day-c',
-        name: 'Day C',
-        focus: 'Full Body',
-        exercises: [
-            {
-                id: 'ex-6',
-                primary: { id: 'dl', name: 'Deadlift', description: 'Compound • Posterior Chain • Barbell' },
-                alternatives: [
-                    { id: 'trap-dl', name: 'Trap Bar Deadlift', description: 'Compound • Legs • Trap Bar' }
-                ],
-                prescription: '3 sets • 3-5 reps @ 2 RIR',
-            },
-        ],
-    },
-];
+// --- Dynamic Plan Generator ---
+const generatePlan = (
+    mesoId: string | undefined,
+    macrocycles: any[]
+): WorkoutDay[] => {
+    // 1. Find Mesocycle
+    let mesocycle = null;
+    for (const macro of macrocycles) {
+        const found = macro.mesocycles.find((m: any) => m.id === mesoId);
+        if (found) {
+            mesocycle = found;
+            break;
+        }
+    }
+
+    // Default Configuration (Fallback)
+    const strategy = mesocycle?.splitStrategy || 'Full Body';
+    const sessions = mesocycle?.sessionsPerWeek || 5;
+    const volumePreset = mesocycle?.volumePreset || 'Hypertrophy';
+
+    // Volume Constants
+    const weeklySets = volumePreset === 'Hypertrophy' ? 12 : 6;
+    const setsPerSession = Math.max(2, Math.round(weeklySets / sessions));
+    const repRange = volumePreset === 'Hypertrophy' ? '8-12' : '4-6';
+    const rir = volumePreset === 'Hypertrophy' ? '2 RIR' : '3 RIR';
+    const prescription = `${setsPerSession} sets • ${repRange} reps @ ${rir}`;
+
+    const days: WorkoutDay[] = [];
+
+    // Helper to find exercises by criteria
+    const findEx = (pattern: string, group?: string, excludeIds: string[] = []) => {
+        return allExercises.find(e =>
+            e.pattern === pattern &&
+            (!group || e.group === group) &&
+            !excludeIds.includes(e.id)
+        );
+    };
+
+    const findAlts = (primaryId: string, pattern: string, group?: string) => {
+        return allExercises
+            .filter(e => e.pattern === pattern && (!group || e.group === group) && e.id !== primaryId)
+            .slice(0, 2);
+    };
+
+    // 2. Generate Days
+    for (let i = 1; i <= sessions; i++) {
+        // Simple Rotation Logic
+        // Day 1: Squat + Push (Horizontal) + Pull (Vertical)
+        // Day 2: Hinge + Push (Vertical) + Pull (Horizontal)
+        // Day 3: Squat + Push (Incline/Iso) + Pull (Iso/Vertical) ... etc
+
+        const dayExercises: ExerciseSlot[] = [];
+        const usedIds: string[] = [];
+
+        // --- Slot 1: Legs (Squat vs Hinge) ---
+        const legPattern = i % 2 !== 0 ? 'Squat' : 'Hinge';
+        const legEx = findEx(legPattern, 'Lower', usedIds);
+
+        if (legEx) {
+            usedIds.push(legEx.id);
+            dayExercises.push({
+                id: `d${i}-s1`,
+                primary: legEx,
+                alternatives: findAlts(legEx.id, legPattern, 'Lower'),
+                prescription // Distribute volume
+            });
+        }
+
+        // --- Slot 2: Push (Horizontal vs Vertical) ---
+        const pushPattern = i % 2 !== 0 ? 'Push' : 'Push'; // Simplify to generic Push for now, or rotate equipment
+        // Let's try to rotate specific exercises by index if possible, 
+        // but for MVP just picking distinct Push exercises is good enough.
+        // We can filter by 'group' to ensure Upper.
+        const pushEx = allExercises.find(e =>
+            e.group === 'Upper' &&
+            e.pattern === 'Push' &&
+            !usedIds.includes(e.id) &&
+            (i % 2 !== 0 ? !e.name.includes('Overhead') : true) // Bias Chest on odd days
+        );
+
+        if (pushEx) {
+            usedIds.push(pushEx.id);
+            dayExercises.push({
+                id: `d${i}-s2`,
+                primary: pushEx,
+                alternatives: findAlts(pushEx.id, 'Push', 'Upper'),
+                prescription
+            });
+        }
+
+        // --- Slot 3: Pull (Vertical vs Horizontal) ---
+        const pullEx = allExercises.find(e =>
+            e.group === 'Upper' &&
+            e.pattern === 'Pull' &&
+            !usedIds.includes(e.id)
+        );
+
+        if (pullEx) {
+            usedIds.push(pullEx.id);
+            dayExercises.push({
+                id: `d${i}-s3`,
+                primary: pullEx,
+                alternatives: findAlts(pullEx.id, 'Pull', 'Upper'),
+                prescription
+            });
+        }
+
+        // --- Slot 4: Accessory / Isolation ---
+        // Rotate: Shoulders, Arms, Abs
+        let isoPattern = 'Isolation';
+        let isoTarget = 'Upper';
+
+        if (i % 3 === 1) isoTarget = 'Upper'; // Arms/Delts
+        else if (i % 3 === 2) isoTarget = 'Lower'; // Calves/Iso legs
+        else isoTarget = 'Core';
+
+        const isoEx = allExercises.find(e =>
+            (e.pattern === 'Isolation' || e.group === isoTarget) &&
+            !usedIds.includes(e.id)
+        );
+
+        if (isoEx) {
+            usedIds.push(isoEx.id);
+            dayExercises.push({
+                id: `d${i}-s4`,
+                primary: isoEx,
+                alternatives: findAlts(isoEx.id, 'Isolation'),
+                prescription: `${Math.max(2, setsPerSession)} sets • 10-15 reps @ ${rir}`
+            });
+        }
+
+        days.push({
+            id: `day-${i}`,
+            name: `Day ${i}`,
+            focus: 'Full Body',
+            exercises: dayExercises
+        });
+    }
+
+    return days;
+};
+
 
 export default function MicrocycleScreen() {
-    const { week, title, type } = useLocalSearchParams();
+    const { week, title, type, mesocycleId } = useLocalSearchParams();
     const router = useRouter();
+    const { macrocycles } = useProgramStore();
     const { setDraft } = useWorkoutDraftStore();
+
+    // Generate Plan (Memoized)
+    const plan = useMemo(() => {
+        return generatePlan(mesocycleId as string, macrocycles);
+    }, [mesocycleId, macrocycles]);
 
     // Local state for collapsed days
     const [expandedDays, setExpandedDays] = useState<Record<string, boolean>>({
-        'day-a': true, // Default expand first day
+        'day-1': true,
     });
 
     // Local state for swapped exercises: Record<slotId, exerciseId>
@@ -199,7 +273,7 @@ export default function MicrocycleScreen() {
                     <Text style={styles.subtitle}>{subtitle}</Text>
                 </View>
 
-                {PLACEHOLDER_PLAN.map((day) => {
+                {plan.map((day) => {
                     const isExpanded = !!expandedDays[day.id];
                     return (
                         <View key={day.id} style={styles.dayContainer}>

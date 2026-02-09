@@ -16,6 +16,9 @@ export default function CreateMesocycle() {
     const { selectedExerciseIds, clearSelection } = useSelectionStore();
 
     const [weeks, setWeeks] = useState(4);
+    const [splitStrategy, setSplitStrategy] = useState<'Full Body' | 'Upper/Lower' | 'PPL'>('Full Body');
+    const [sessionsPerWeek, setSessionsPerWeek] = useState(5);
+    const [volumePreset, setVolumePreset] = useState<'Hypertrophy' | 'Strength'>('Hypertrophy');
     const [focus, setFocus] = useState<Focus>('Hypertrophy');
     const [progression, setProgression] = useState('Linear');
     const [autoDeload, setAutoDeload] = useState(true);
@@ -30,9 +33,12 @@ export default function CreateMesocycle() {
 
         const newMeso: Mesocycle = {
             id: Date.now().toString(),
-            name: `${focus} Block`,
+            name: `${focus} Block (${splitStrategy})`,
             weeks,
             focus,
+            splitStrategy,
+            sessionsPerWeek,
+            volumePreset,
             progressionModel: progression as any,
             autoDeload,
             volumeRamp: true, // simplified
@@ -47,6 +53,41 @@ export default function CreateMesocycle() {
         <SafeAreaView style={styles.container}>
             <Stack.Screen options={{ title: 'Add Mesocycle', headerBackTitle: 'Cancel' }} />
             <ScrollView contentContainerStyle={styles.content}>
+
+                <Select
+                    label="Split Strategy"
+                    value={splitStrategy}
+                    onChange={(v) => setSplitStrategy(v as any)}
+                    options={[
+                        { label: 'Full-Body High Frequency', value: 'Full Body' },
+                        { label: 'Upper / Lower', value: 'Upper/Lower' },
+                        { label: 'Push / Pull / Legs', value: 'PPL' },
+                    ]}
+                />
+                <Text style={styles.helperText}>
+                    Higher frequency = distribute weekly volume into smaller per-session doses.
+                </Text>
+
+                <Slider
+                    label="Sessions per Week"
+                    value={sessionsPerWeek}
+                    min={3}
+                    max={7}
+                    unit=" Sessions"
+                    onValueChange={setSessionsPerWeek}
+                />
+
+                <Select
+                    label="Weekly Volume Preset"
+                    value={volumePreset}
+                    onChange={(v) => setVolumePreset(v as any)}
+                    options={[
+                        { label: 'Hypertrophy (Moderate)', value: 'Hypertrophy' },
+                        { label: 'Strength-Biased', value: 'Strength' },
+                    ]}
+                />
+
+                <View style={styles.divider} />
 
                 <Select
                     label="Focus"
@@ -121,6 +162,8 @@ const styles = StyleSheet.create({
     content: { padding: spacing.l },
     row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.m },
     label: { ...typography.body, color: colors.textSecondary },
+    helperText: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.m, fontStyle: 'italic' },
+    divider: { height: 1, backgroundColor: colors.border, marginVertical: spacing.m },
     section: { marginBottom: spacing.m },
     selectionCount: { ...typography.bodyBold, color: colors.primary, marginBottom: spacing.s, marginTop: spacing.xs },
 });

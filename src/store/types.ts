@@ -22,6 +22,9 @@ export interface Mesocycle {
     focus: Focus;
     progressionModel: 'Linear' | 'Double Progression' | 'RPE Stop';
     splitId?: string; // ID of the split template used
+    splitStrategy: 'Full Body' | 'Upper/Lower' | 'PPL';
+    sessionsPerWeek: number; // 3-7
+    volumePreset: 'Hypertrophy' | 'Strength';
     autoDeload: boolean;
     volumeRamp: boolean; // Simple mock
     exercises?: string[]; // Array of exercise IDs

@@ -124,7 +124,8 @@ export default function PlanScreen() {
                                             pathname: `/microcycle/${wIndex + 1}`,
                                             params: {
                                                 type: isDeload ? 'deload' : 'standard',
-                                                title: isDeload ? `W${wIndex + 1} Deload` : `W${wIndex + 1} Standard Microcycle`
+                                                title: isDeload ? `W${wIndex + 1} Deload` : `W${wIndex + 1} Standard Microcycle`,
+                                                mesocycleId: meso.id
                                             }
                                         })}
                                         activeOpacity={0.7}

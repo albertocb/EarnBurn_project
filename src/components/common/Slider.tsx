@@ -28,7 +28,7 @@ export const Slider = ({ label, min, max, step = 1, value, onValueChange, unit =
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.label}>{label}</Text>
+                {!!label && <Text style={styles.label}>{label}</Text>}
                 <Text style={styles.value}>{value}{unit}</Text>
             </View>
             <View

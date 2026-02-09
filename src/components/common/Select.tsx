@@ -17,7 +17,7 @@ interface SelectProps {
 export const Select = ({ label, options, value, onChange }: SelectProps) => {
     return (
         <View style={styles.container}>
-            <Text style={styles.label}>{label}</Text>
+            {!!label && <Text style={styles.label}>{label}</Text>}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.options}>
                 {options.map((opt) => {
                     const isSelected = value === opt.value;

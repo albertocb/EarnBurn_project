@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../src/components/common/Button';
+import { SectionHeader } from '../../src/components/common/SectionHeader';
 import { Select } from '../../src/components/common/Select';
 import { Slider } from '../../src/components/common/Slider';
 import { useProgramStore } from '../../src/store/programStore';
@@ -54,7 +55,7 @@ export default function CreateMesocycle() {
             <Stack.Screen options={{ title: 'Add Mesocycle', headerBackTitle: 'Cancel' }} />
             <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 100, paddingTop: spacing.xl }]}>
 
-                <Text style={styles.sectionLabel}>Split Strategy</Text>
+                <SectionHeader title="Split Strategy" />
                 <View style={styles.splitOptionsContainer}>
                     {[
                         { label: 'Full-Body High Frequency', value: 'Full Body', desc: 'Rec. for 3-5 sessions' },
@@ -93,8 +94,9 @@ export default function CreateMesocycle() {
                     Higher frequency (Full Body) allows for more quality sets per muscle group across the week.
                 </Text>
 
+                <SectionHeader title="Sessions per Week" />
                 <Slider
-                    label="Sessions per Week"
+                    label=""
                     value={sessionsPerWeek}
                     min={3}
                     max={7}
@@ -102,8 +104,9 @@ export default function CreateMesocycle() {
                     onValueChange={setSessionsPerWeek}
                 />
 
+                <SectionHeader title="Weekly Volume Preset" />
                 <Select
-                    label="Weekly Volume Preset"
+                    label=""
                     value={volumePreset}
                     onChange={(v) => setVolumePreset(v as any)}
                     options={[
@@ -114,8 +117,9 @@ export default function CreateMesocycle() {
 
                 <View style={styles.divider} />
 
+                <SectionHeader title="Focus" />
                 <Select
-                    label="Focus"
+                    label=""
                     value={focus}
                     onChange={(v) => setFocus(v as Focus)}
                     options={[
@@ -125,8 +129,9 @@ export default function CreateMesocycle() {
                     ]}
                 />
 
+                <SectionHeader title="Length" />
                 <Slider
-                    label="Length"
+                    label=""
                     value={weeks}
                     min={4}
                     max={8}
@@ -134,8 +139,9 @@ export default function CreateMesocycle() {
                     onValueChange={setWeeks}
                 />
 
+                <SectionHeader title="Progression Model" />
                 <Select
-                    label="Progression Model"
+                    label=""
                     value={progression}
                     onChange={setProgression}
                     options={[
@@ -145,8 +151,9 @@ export default function CreateMesocycle() {
                     ]}
                 />
 
+                <SectionHeader title="Target RIR (Reps In Reserve)" />
                 <Slider
-                    label="Target RIR (Reps In Reserve)"
+                    label=""
                     value={rir}
                     min={0}
                     max={3}
@@ -156,7 +163,7 @@ export default function CreateMesocycle() {
 
 
                 <View style={styles.section}>
-                    <Text style={styles.label}>Exercises</Text>
+                    <SectionHeader title="Exercises" />
                     <Text style={styles.selectionCount}>
                         {selectedExerciseIds.length} Selected
                     </Text>
@@ -182,7 +189,7 @@ const styles = StyleSheet.create({
     helperText: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.m, fontStyle: 'italic' },
     divider: { height: 1, backgroundColor: colors.border, marginVertical: spacing.m },
     section: { marginBottom: spacing.m },
-    sectionLabel: { ...typography.sectionHeader, color: colors.textSecondary },
+    // sectionLabel removed - replaced by component
     splitOptionsContainer: { gap: spacing.s, marginBottom: spacing.s },
     splitCard: {
         flexDirection: 'row',

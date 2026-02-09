@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     timeText: {
         ...typography.bodyBold,
         fontSize: 20, // Slightly larger
-        lineHeight: 16, // Tight line height, close to font size
+        lineHeight: 21, // Tight line height, close to font size
         textAlign: 'center',
         textAlignVertical: 'center', // Android vertical center
         includeFontPadding: false,   // Android remove extra padding

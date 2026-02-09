@@ -3,7 +3,6 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { TimerBar } from '../src/components/TimerBar';
 import { useRunMigrations } from '../src/db/migrations';
 import { useProgramStore } from '../src/store/programStore';
 import { useUserStore } from '../src/store/userStore';
@@ -54,12 +53,13 @@ export default function RootLayout() {
                         headerTintColor: colors.text,
                         headerTitleStyle: { fontWeight: 'bold' },
                         contentStyle: { backgroundColor: colors.background },
-                        headerShown: false,
+                        headerShown: true,
+                        headerTitleAlign: 'center',
+                        headerShadowVisible: false,
                     }}
                 >
                     <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 </Stack>
-                <TimerBar />
             </View>
         </SafeAreaProvider>
     );

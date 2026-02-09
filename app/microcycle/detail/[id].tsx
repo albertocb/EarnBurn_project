@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { AppScreen } from '../../../src/components/AppScreen';
 import { Card } from '../../../src/components/common/Card';
 import { programRepository } from '../../../src/repositories/programRepository';
 import { colors, spacing, typography } from '../../../src/theme/theme';
@@ -35,7 +35,7 @@ export default function MicrocycleDetail() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <AppScreen contentContainerStyle={styles.scroll}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color={colors.primary} />
@@ -43,25 +43,25 @@ export default function MicrocycleDetail() {
                 <Text style={styles.title}>Week Plan</Text>
             </View>
 
-            <ScrollView contentContainerStyle={styles.scroll}>
-                {sessions.length === 0 ? (
-                    <Text style={styles.emptyText}>No sessions planned for this week.</Text>
-                ) : (
-                    sessions.map((session, index) => (
-                        <TouchableOpacity
-                            key={session.id}
-                            onPress={() => router.push(`/session/${session.id}`)}
-                        >
-                            <Card style={styles.sessionCard}>
-                                <Text style={styles.dayLabel}>Day {session.dayNumber}</Text>
-                                <Text style={styles.sessionName}>{session.name}</Text>
-                                <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-                            </Card>
-                        </TouchableOpacity>
-                    ))
-                )}
-            </ScrollView>
-        </SafeAreaView>
+
+            {sessions.length === 0 ? (
+                <Text style={styles.emptyText}>No sessions planned for this week.</Text>
+            ) : (
+                sessions.map((session, index) => (
+                    <TouchableOpacity
+                        key={session.id}
+                        onPress={() => router.push(`/session/${session.id}`)}
+                    >
+                        <Card style={styles.sessionCard}>
+                            <Text style={styles.dayLabel}>Day {session.dayNumber}</Text>
+                            <Text style={styles.sessionName}>{session.name}</Text>
+                            <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+                        </Card>
+                    </TouchableOpacity>
+                ))
+            )}
+
+        </AppScreen>
     );
 }
 

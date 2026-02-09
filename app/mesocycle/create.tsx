@@ -1,7 +1,7 @@
 import { Stack, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { AppScreen } from '../../src/components/AppScreen';
 import { Button } from '../../src/components/common/Button';
 import { SectionHeader } from '../../src/components/common/SectionHeader';
 import { Select } from '../../src/components/common/Select';
@@ -51,133 +51,132 @@ export default function CreateMesocycle() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <AppScreen contentContainerStyle={[styles.content, { paddingBottom: 100, paddingTop: spacing.xl }]}>
             <Stack.Screen options={{ title: 'Add Mesocycle', headerBackTitle: 'Cancel' }} />
-            <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 100, paddingTop: spacing.xl }]}>
 
-                <SectionHeader title="Split Strategy" variant="pillDivider" icon="🧩" />
-                <View style={styles.splitOptionsContainer}>
-                    {[
-                        { label: 'Full-Body High Frequency', value: 'Full Body', desc: 'Rec. for 3-5 sessions' },
-                        { label: 'Upper / Lower', value: 'Upper/Lower', desc: 'Rec. for 4-6 sessions' },
-                        { label: 'Push / Pull / Legs', value: 'PPL', desc: 'Rec. for 6 sessions' },
-                    ].map((opt) => {
-                        const isSelected = splitStrategy === opt.value;
-                        return (
-                            <Pressable
-                                key={opt.value}
-                                onPress={() => setSplitStrategy(opt.value as any)}
-                                style={[
-                                    styles.splitCard,
-                                    isSelected ? styles.splitCardSelected : styles.splitCardUnselected
-                                ]}
-                            >
-                                <View>
-                                    <Text style={[styles.splitLabel, isSelected && styles.splitLabelSelected]}>
-                                        {opt.label}
-                                    </Text>
-                                    <Text style={[styles.splitDesc, isSelected && styles.splitDescSelected]}>
-                                        {opt.desc}
-                                    </Text>
+            <SectionHeader title="Split Strategy" variant="pillDivider" icon="🧩" />
+            <View style={styles.splitOptionsContainer}>
+                {[
+                    { label: 'Full-Body High Frequency', value: 'Full Body', desc: 'Rec. for 3-5 sessions' },
+                    { label: 'Upper / Lower', value: 'Upper/Lower', desc: 'Rec. for 4-6 sessions' },
+                    { label: 'Push / Pull / Legs', value: 'PPL', desc: 'Rec. for 6 sessions' },
+                ].map((opt) => {
+                    const isSelected = splitStrategy === opt.value;
+                    return (
+                        <Pressable
+                            key={opt.value}
+                            onPress={() => setSplitStrategy(opt.value as any)}
+                            style={[
+                                styles.splitCard,
+                                isSelected ? styles.splitCardSelected : styles.splitCardUnselected
+                            ]}
+                        >
+                            <View>
+                                <Text style={[styles.splitLabel, isSelected && styles.splitLabelSelected]}>
+                                    {opt.label}
+                                </Text>
+                                <Text style={[styles.splitDesc, isSelected && styles.splitDescSelected]}>
+                                    {opt.desc}
+                                </Text>
+                            </View>
+                            {isSelected && (
+                                <View style={styles.checkCircle}>
+                                    <View style={styles.checkInner} />
                                 </View>
-                                {isSelected && (
-                                    <View style={styles.checkCircle}>
-                                        <View style={styles.checkInner} />
-                                    </View>
-                                )}
-                            </Pressable>
-                        );
-                    })}
-                </View>
+                            )}
+                        </Pressable>
+                    );
+                })}
+            </View>
 
-                <Text style={styles.helperText}>
-                    Higher frequency (Full Body) allows for more quality sets per muscle group across the week.
+            <Text style={styles.helperText}>
+                Higher frequency (Full Body) allows for more quality sets per muscle group across the week.
+            </Text>
+
+            <SectionHeader title="Sessions per Week" variant="pillDivider" icon="📅" />
+            <Slider
+                label=""
+                value={sessionsPerWeek}
+                min={3}
+                max={7}
+                unit=" Sessions"
+                onValueChange={setSessionsPerWeek}
+            />
+
+            <SectionHeader title="Weekly Volume Preset" variant="pillDivider" icon="📊" />
+            <Select
+                label=""
+                value={volumePreset}
+                onChange={(v) => setVolumePreset(v as any)}
+                options={[
+                    { label: 'Hypertrophy (Moderate)', value: 'Hypertrophy' },
+                    { label: 'Strength-Biased', value: 'Strength' },
+                ]}
+            />
+
+            <View style={styles.divider} />
+
+            <SectionHeader title="Focus" variant="pillDivider" icon="🎯" />
+            <Select
+                label=""
+                value={focus}
+                onChange={(v) => setFocus(v as Focus)}
+                options={[
+                    { label: 'Hypertrophy', value: 'Hypertrophy' },
+                    { label: 'Strength', value: 'Strength' },
+                    { label: 'Peaking', value: 'Peaking' },
+                ]}
+            />
+
+            <SectionHeader title="Length" variant="pillDivider" icon="⏱️" />
+            <Slider
+                label=""
+                value={weeks}
+                min={4}
+                max={8}
+                unit=" Weeks"
+                onValueChange={setWeeks}
+            />
+
+            <SectionHeader title="Progression Model" variant="pillDivider" icon="📈" />
+            <Select
+                label=""
+                value={progression}
+                onChange={setProgression}
+                options={[
+                    { label: 'Linear', value: 'Linear' },
+                    { label: 'Double', value: 'Double Progression' },
+                    { label: 'RPE Stop', value: 'RPE Stop' },
+                ]}
+            />
+
+            <SectionHeader title="Target RIR (Reps In Reserve)" variant="pillDivider" icon="🧠" />
+            <Slider
+                label=""
+                value={rir}
+                min={0}
+                max={3}
+                unit=" RIR"
+                onValueChange={setRir}
+            />
+
+
+            <View style={styles.section}>
+                <SectionHeader title="Exercises" variant="pillDivider" icon="🏋️" />
+                <Text style={styles.selectionCount}>
+                    {selectedExerciseIds.length} Selected
                 </Text>
-
-                <SectionHeader title="Sessions per Week" variant="pillDivider" icon="📅" />
-                <Slider
-                    label=""
-                    value={sessionsPerWeek}
-                    min={3}
-                    max={7}
-                    unit=" Sessions"
-                    onValueChange={setSessionsPerWeek}
+                <Button
+                    title="Select Exercises"
+                    onPress={() => router.push('/mesocycle/exercises')}
+                    variant="secondary"
                 />
+            </View>
 
-                <SectionHeader title="Weekly Volume Preset" variant="pillDivider" icon="📊" />
-                <Select
-                    label=""
-                    value={volumePreset}
-                    onChange={(v) => setVolumePreset(v as any)}
-                    options={[
-                        { label: 'Hypertrophy (Moderate)', value: 'Hypertrophy' },
-                        { label: 'Strength-Biased', value: 'Strength' },
-                    ]}
-                />
+            <View style={{ height: 20 }} />
+            <Button title="Add to Plan" onPress={handleSave} />
 
-                <View style={styles.divider} />
-
-                <SectionHeader title="Focus" variant="pillDivider" icon="🎯" />
-                <Select
-                    label=""
-                    value={focus}
-                    onChange={(v) => setFocus(v as Focus)}
-                    options={[
-                        { label: 'Hypertrophy', value: 'Hypertrophy' },
-                        { label: 'Strength', value: 'Strength' },
-                        { label: 'Peaking', value: 'Peaking' },
-                    ]}
-                />
-
-                <SectionHeader title="Length" variant="pillDivider" icon="⏱️" />
-                <Slider
-                    label=""
-                    value={weeks}
-                    min={4}
-                    max={8}
-                    unit=" Weeks"
-                    onValueChange={setWeeks}
-                />
-
-                <SectionHeader title="Progression Model" variant="pillDivider" icon="📈" />
-                <Select
-                    label=""
-                    value={progression}
-                    onChange={setProgression}
-                    options={[
-                        { label: 'Linear', value: 'Linear' },
-                        { label: 'Double', value: 'Double Progression' },
-                        { label: 'RPE Stop', value: 'RPE Stop' },
-                    ]}
-                />
-
-                <SectionHeader title="Target RIR (Reps In Reserve)" variant="pillDivider" icon="🧠" />
-                <Slider
-                    label=""
-                    value={rir}
-                    min={0}
-                    max={3}
-                    unit=" RIR"
-                    onValueChange={setRir}
-                />
-
-
-                <View style={styles.section}>
-                    <SectionHeader title="Exercises" variant="pillDivider" icon="🏋️" />
-                    <Text style={styles.selectionCount}>
-                        {selectedExerciseIds.length} Selected
-                    </Text>
-                    <Button
-                        title="Select Exercises"
-                        onPress={() => router.push('/mesocycle/exercises')}
-                        variant="secondary"
-                    />
-                </View>
-
-                <View style={{ height: 20 }} />
-                <Button title="Add to Plan" onPress={handleSave} />
-            </ScrollView>
-        </SafeAreaView>
+        </AppScreen>
     );
 }
 

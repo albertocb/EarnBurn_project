@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { PRWidget } from '../../src/components/analytics/PRWidget';
 import { VolumeWidget } from '../../src/components/analytics/VolumeWidget';
+import { AppScreen } from '../../src/components/AppScreen';
 import { Button } from '../../src/components/common/Button';
 import { Card } from '../../src/components/common/Card';
 import { workoutRepository } from '../../src/repositories/workoutRepository';
@@ -50,7 +50,7 @@ export default function PlanScreen() {
 
     if (!activeMacro) {
         return (
-            <SafeAreaView style={styles.container}>
+            <AppScreen contentContainerStyle={styles.scroll}>
                 <View style={styles.header}>
                     <View>
                         <Text style={styles.greeting}>Good Morning,</Text>
@@ -64,99 +64,95 @@ export default function PlanScreen() {
                 </View>
 
                 {/* Analytics Dashboard (Even without active plan) */}
-                <ScrollView contentContainerStyle={styles.scroll}>
-                    <PRWidget prs={prs} />
-                    <VolumeWidget data={volumeData} />
+                <PRWidget prs={prs} />
+                <VolumeWidget data={volumeData} />
 
-                    <View style={styles.emptyState}>
-                        <Text style={styles.title}>Your Plan</Text>
-                        <Text style={styles.subtitle}>No active training plan.</Text>
-                        <Button title="Start New Macrocycle" onPress={() => router.push('/macrocycle/create')} />
-                    </View>
-                </ScrollView>
-            </SafeAreaView>
+                <View style={styles.emptyState}>
+                    <Text style={styles.title}>Your Plan</Text>
+                    <Text style={styles.subtitle}>No active training plan.</Text>
+                    <Button title="Start New Macrocycle" onPress={() => router.push('/macrocycle/create')} />
+                </View>
+            </AppScreen>
         );
     }
 
     return (
-        <SafeAreaView style={styles.container}>
-            <ScrollView contentContainerStyle={styles.scroll}>
-                <View style={styles.header}>
-                    <View>
-                        <Text style={styles.greeting}>Good Morning,</Text>
-                        <Text style={styles.username}>{profile.name || 'Campeón'}</Text>
+        <AppScreen contentContainerStyle={styles.scroll}>
+            <View style={styles.header}>
+                <View>
+                    <Text style={styles.greeting}>Good Morning,</Text>
+                    <Text style={styles.username}>{profile.name || 'Campeón'}</Text>
+                </View>
+                <TouchableOpacity onPress={() => router.push('/profile')}>
+                    <View style={styles.avatar}>
+                        <Text style={styles.avatarText}>{(profile.name || 'C').charAt(0)}</Text>
                     </View>
-                    <TouchableOpacity onPress={() => router.push('/profile')}>
-                        <View style={styles.avatar}>
-                            <Text style={styles.avatarText}>{(profile.name || 'C').charAt(0)}</Text>
-                        </View>
-                    </TouchableOpacity>
-                </View>
+                </TouchableOpacity>
+            </View>
 
-                {/* Analytics Dashboard */}
-                <PRWidget prs={prs} />
-                <VolumeWidget data={volumeData} />
+            {/* Analytics Dashboard */}
+            <PRWidget prs={prs} />
+            <VolumeWidget data={volumeData} />
 
-                <View style={styles.sectionHeaderContainer}>
-                    <Text style={styles.sectionHeader}>{activeMacro.name}</Text>
-                    <TouchableOpacity>
-                        <Ionicons name="settings-outline" size={24} color={colors.primary} />
-                    </TouchableOpacity>
-                </View>
+            <View style={styles.sectionHeaderContainer}>
+                <Text style={styles.sectionHeader}>{activeMacro.name}</Text>
+                <TouchableOpacity>
+                    <Ionicons name="settings-outline" size={24} color={colors.primary} />
+                </TouchableOpacity>
+            </View>
 
-                {activeMacro.mesocycles.map((meso, index) => (
-                    <Card key={meso.id} style={styles.mesoCard}>
-                        <View style={styles.mesoHeader}>
-                            <Text style={styles.mesoIndex}>Block {index + 1}</Text>
-                            <Text style={styles.mesoFocus}>{meso.focus}</Text>
-                        </View>
-                        <View style={styles.mesoDetails}>
-                            <Text style={styles.mesoDetailText}>{meso.progressionModel}</Text>
-                        </View>
+            {activeMacro.mesocycles.map((meso, index) => (
+                <Card key={meso.id} style={styles.mesoCard}>
+                    <View style={styles.mesoHeader}>
+                        <Text style={styles.mesoIndex}>Block {index + 1}</Text>
+                        <Text style={styles.mesoFocus}>{meso.focus}</Text>
+                    </View>
+                    <View style={styles.mesoDetails}>
+                        <Text style={styles.mesoDetailText}>{meso.progressionModel}</Text>
+                    </View>
 
-                        <View style={styles.weeksContainer}>
-                            {Array.from({ length: meso.weeks + 1 }).map((_, wIndex) => {
-                                const isDeload = wIndex === meso.weeks; // Last week (N+1) is Deload
-                                return (
-                                    <TouchableOpacity
-                                        key={wIndex}
-                                        onPress={() => router.push({
-                                            pathname: `/microcycle/${wIndex + 1}` as any,
-                                            params: {
-                                                type: isDeload ? 'deload' : 'standard',
-                                                title: isDeload ? `W${wIndex + 1} Deload` : `W${wIndex + 1} Standard Microcycle`,
-                                                mesocycleId: meso.id
-                                            }
-                                        })}
-                                        activeOpacity={0.7}
-                                    >
-                                        <View style={[styles.weekRow, isDeload && styles.deloadRow]}>
-                                            <View style={styles.weekIndicator}>
-                                                <Text style={styles.weekText}>W{wIndex + 1}</Text>
-                                            </View>
-                                            <View style={styles.weekContent}>
-                                                <Text style={[styles.weekLabel, isDeload && styles.deloadText]}>
-                                                    {isDeload ? 'Deload & Recovery' : 'Standard Microcycle'}
-                                                </Text>
-                                            </View>
-                                            {isDeload && <Ionicons name="battery-charging" size={16} color={colors.accent} />}
-                                            <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} style={{ marginLeft: spacing.s }} />
+                    <View style={styles.weeksContainer}>
+                        {Array.from({ length: meso.weeks + 1 }).map((_, wIndex) => {
+                            const isDeload = wIndex === meso.weeks; // Last week (N+1) is Deload
+                            return (
+                                <TouchableOpacity
+                                    key={wIndex}
+                                    onPress={() => router.push({
+                                        pathname: `/microcycle/${wIndex + 1}` as any,
+                                        params: {
+                                            type: isDeload ? 'deload' : 'standard',
+                                            title: isDeload ? `W${wIndex + 1} Deload` : `W${wIndex + 1} Standard Microcycle`,
+                                            mesocycleId: meso.id
+                                        }
+                                    })}
+                                    activeOpacity={0.7}
+                                >
+                                    <View style={[styles.weekRow, isDeload && styles.deloadRow]}>
+                                        <View style={styles.weekIndicator}>
+                                            <Text style={styles.weekText}>W{wIndex + 1}</Text>
                                         </View>
-                                    </TouchableOpacity>
-                                );
-                            })}
-                        </View>
-                    </Card>
-                ))}
+                                        <View style={styles.weekContent}>
+                                            <Text style={[styles.weekLabel, isDeload && styles.deloadText]}>
+                                                {isDeload ? 'Deload & Recovery' : 'Standard Microcycle'}
+                                            </Text>
+                                        </View>
+                                        {isDeload && <Ionicons name="battery-charging" size={16} color={colors.accent} />}
+                                        <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} style={{ marginLeft: spacing.s }} />
+                                    </View>
+                                </TouchableOpacity>
+                            );
+                        })}
+                    </View>
+                </Card>
+            ))}
 
-                <Button
-                    title="Add Mesocycle"
-                    variant="secondary"
-                    onPress={() => router.push('/mesocycle/create')}
-                    style={styles.addButton}
-                />
-            </ScrollView>
-        </SafeAreaView>
+            <Button
+                title="Add Mesocycle"
+                variant="secondary"
+                onPress={() => router.push('/mesocycle/create')}
+                style={styles.addButton}
+            />
+        </AppScreen>
     );
 }
 

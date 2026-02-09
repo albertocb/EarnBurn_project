@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { useTimerStore } from '../store/timerStore';
 import { colors, typography } from '../theme/theme';
 
 export const TimerBar = () => {
-    const insets = useSafeAreaInsets();
     const { isRunning, toggle, getElapsedMs } = useTimerStore();
     const [displayTime, setDisplayTime] = useState('00:00:00');
 
@@ -36,35 +34,28 @@ export const TimerBar = () => {
         };
     }, [isRunning, getElapsedMs]);
 
-    // If timer is at 0 and not running, maybe hide it? 
-    // Requirement says "always visible" but usually a 00:00:00 timer floating is annoying.
-    // Spec says: "Global stopwatch shown... (same spot on every screen)" implies always visible.
-    // Let's keep it visible.
-
     const barColor = isRunning ? colors.primary : '#D946EF'; // Magenta-ish when paused
 
     return (
-        <View style={[styles.container, { top: insets.top + 8 }]} pointerEvents="box-none">
-            <TouchableOpacity
-                style={[
-                    styles.square,
-                    {
-                        borderColor: barColor,
-                        backgroundColor: isRunning ? colors.surface : '#FAE8FF' // Very light magenta tint when paused
-                    }
-                ]}
-                onPress={toggle}
-                activeOpacity={0.8}
+        <TouchableOpacity
+            style={[
+                styles.square,
+                {
+                    borderColor: barColor,
+                    backgroundColor: isRunning ? colors.surface : '#FAE8FF'
+                }
+            ]}
+            onPress={toggle}
+            activeOpacity={0.8}
+        >
+            <Text
+                style={[styles.timeText, { color: barColor }]}
+                adjustsFontSizeToFit
+                numberOfLines={1}
             >
-                <Text
-                    style={[styles.timeText, { color: barColor }]}
-                    adjustsFontSizeToFit
-                    numberOfLines={1}
-                >
-                    {displayTime}
-                </Text>
-            </TouchableOpacity>
-        </View>
+                {displayTime}
+            </Text>
+        </TouchableOpacity>
     );
 
 };

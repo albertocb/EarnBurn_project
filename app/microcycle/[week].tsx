@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { AppScreen } from '../../src/components/AppScreen';
 import { Button } from '../../src/components/common/Button';
 import { Card } from '../../src/components/common/Card';
 import { exercises as allExercises } from '../../src/data/exercises';
@@ -333,7 +333,7 @@ export default function MicrocycleScreen() {
     const subtitle = "Open the planned workout. If equipment is taken, swap to an alternative.";
 
     return (
-        <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
+        <AppScreen contentContainerStyle={styles.content}>
             <Stack.Screen
                 options={{
                     title: '',
@@ -343,121 +343,119 @@ export default function MicrocycleScreen() {
                 }}
             />
 
-            <ScrollView contentContainerStyle={styles.content}>
-                <View style={styles.headerContainer}>
-                    <Text style={styles.title}>{displayTitle}</Text>
-                    <Text style={styles.subtitle}>{subtitle}</Text>
-                </View>
+            <View style={styles.headerContainer}>
+                <Text style={styles.title}>{displayTitle}</Text>
+                <Text style={styles.subtitle}>{subtitle}</Text>
+            </View>
 
-                {plan.map((day) => {
-                    const isExpanded = !!expandedDays[day.id];
-                    const statusData = dayStatuses[day.id];
-                    const isCompleted = statusData?.status === 'completed';
-                    const isPartial = statusData?.status === 'partial';
+            {plan.map((day) => {
+                const isExpanded = !!expandedDays[day.id];
+                const statusData = dayStatuses[day.id];
+                const isCompleted = statusData?.status === 'completed';
+                const isPartial = statusData?.status === 'partial';
 
-                    // Dynamic Styles based on status
-                    let headerStyle: any = [styles.dayHeader];
-                    if (isExpanded) headerStyle.push(styles.dayHeaderActive);
-                    if (isCompleted) headerStyle.push(styles.dayHeaderCompleted);
-                    if (isPartial) headerStyle.push(styles.dayHeaderPartial);
+                // Dynamic Styles based on status
+                let headerStyle: any = [styles.dayHeader];
+                if (isExpanded) headerStyle.push(styles.dayHeaderActive);
+                if (isCompleted) headerStyle.push(styles.dayHeaderCompleted);
+                if (isPartial) headerStyle.push(styles.dayHeaderPartial);
 
-                    return (
-                        <View key={day.id} style={styles.dayContainer}>
-                            <Pressable
-                                onPress={() => toggleDay(day.id)}
-                                style={headerStyle}
-                            >
-                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                    <View>
-                                        <Text style={[styles.dayTitle, isCompleted && { color: colors.textSecondary }]}>{day.name}</Text>
-                                        <Text style={styles.dayFocus}>{day.focus}</Text>
+                return (
+                    <View key={day.id} style={styles.dayContainer}>
+                        <Pressable
+                            onPress={() => toggleDay(day.id)}
+                            style={headerStyle}
+                        >
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <View>
+                                    <Text style={[styles.dayTitle, isCompleted && { color: colors.textSecondary }]}>{day.name}</Text>
+                                    <Text style={styles.dayFocus}>{day.focus}</Text>
+                                </View>
+                                {isCompleted && (
+                                    <View style={styles.statusBadgeCompleted}>
+                                        <Ionicons name="checkmark-circle" size={14} color={colors.textSecondary} />
+                                        <Text style={styles.statusTextCompleted}>Done</Text>
                                     </View>
-                                    {isCompleted && (
-                                        <View style={styles.statusBadgeCompleted}>
-                                            <Ionicons name="checkmark-circle" size={14} color={colors.textSecondary} />
-                                            <Text style={styles.statusTextCompleted}>Done</Text>
-                                        </View>
-                                    )}
-                                    {isPartial && (
-                                        <View style={styles.statusBadgePartial}>
-                                            <Ionicons name="alert-circle" size={14} color={colors.warning} />
-                                            <Text style={styles.statusTextPartial}>Partial</Text>
-                                        </View>
-                                    )}
-                                </View>
-                                <Ionicons
-                                    name={isExpanded ? "chevron-up" : "chevron-down"}
-                                    size={20}
-                                    color={colors.textSecondary}
-                                />
-                            </Pressable>
+                                )}
+                                {isPartial && (
+                                    <View style={styles.statusBadgePartial}>
+                                        <Ionicons name="alert-circle" size={14} color={colors.warning} />
+                                        <Text style={styles.statusTextPartial}>Partial</Text>
+                                    </View>
+                                )}
+                            </View>
+                            <Ionicons
+                                name={isExpanded ? "chevron-up" : "chevron-down"}
+                                size={20}
+                                color={colors.textSecondary}
+                            />
+                        </Pressable>
 
-                            {isExpanded && (
-                                <View style={[styles.exercisesList, (isCompleted || isPartial) && { opacity: 0.8 }]}>
-                                    {day.exercises.map((slot) => {
-                                        const activeEx = getActiveExercise(slot);
-                                        const isSwapped = !!swaps[slot.id];
+                        {isExpanded && (
+                            <View style={[styles.exercisesList, (isCompleted || isPartial) && { opacity: 0.8 }]}>
+                                {day.exercises.map((slot) => {
+                                    const activeEx = getActiveExercise(slot);
+                                    const isSwapped = !!swaps[slot.id];
 
-                                        return (
-                                            <Card key={slot.id} style={styles.exerciseCard}>
-                                                <View style={styles.exerciseRow}>
-                                                    <View style={styles.exerciseInfo}>
-                                                        <Text style={styles.exerciseName}>{activeEx.name}</Text>
-                                                        <Text style={styles.exerciseDesc}>{activeEx.description}</Text>
-                                                        <View style={styles.prescriptionContainer}>
-                                                            <Ionicons name="fitness-outline" size={14} color={colors.primary} />
-                                                            <Text style={styles.prescriptionText}>{slot.prescription}</Text>
+                                    return (
+                                        <Card key={slot.id} style={styles.exerciseCard}>
+                                            <View style={styles.exerciseRow}>
+                                                <View style={styles.exerciseInfo}>
+                                                    <Text style={styles.exerciseName}>{activeEx.name}</Text>
+                                                    <Text style={styles.exerciseDesc}>{activeEx.description}</Text>
+                                                    <View style={styles.prescriptionContainer}>
+                                                        <Ionicons name="fitness-outline" size={14} color={colors.primary} />
+                                                        <Text style={styles.prescriptionText}>{slot.prescription}</Text>
+                                                    </View>
+                                                    {isSwapped && (
+                                                        <View style={styles.badge}>
+                                                            <Text style={styles.badgeText}>Substituted</Text>
                                                         </View>
-                                                        {isSwapped && (
-                                                            <View style={styles.badge}>
-                                                                <Text style={styles.badgeText}>Substituted</Text>
-                                                            </View>
-                                                        )}
-                                                    </View>
-
-                                                    <View style={styles.actions}>
-                                                        {isSwapped ? (
-                                                            <Pressable
-                                                                onPress={() => undoSwap(slot.id)}
-                                                                style={styles.undoButton}
-                                                                disabled={isCompleted || isPartial} // Disable swaps if done
-                                                            >
-                                                                <Ionicons name="refresh" size={18} color={isCompleted ? colors.textDim : colors.accent} />
-                                                                <Text style={[styles.undoText, isCompleted && { color: colors.textDim }]}>Undo</Text>
-                                                            </Pressable>
-                                                        ) : (
-                                                            <Pressable
-                                                                onPress={() => handleSwapPress(slot)}
-                                                                style={styles.swapButton}
-                                                                disabled={isCompleted || isPartial} // Disable swaps if done
-                                                            >
-                                                                <Ionicons name="swap-horizontal" size={20} color={isCompleted ? colors.textDim : colors.secondary} />
-                                                            </Pressable>
-                                                        )}
-                                                    </View>
+                                                    )}
                                                 </View>
-                                            </Card>
-                                        );
-                                    })}
 
-                                    <Button
-                                        title={statusData ? (isCompleted ? "Completed" : "Incomplete") : "Start This Workout"}
-                                        onPress={() => handleStartPress(day, statusData)}
-                                        style={{ marginTop: spacing.m, opacity: statusData ? 0.6 : 1 }}
-                                        variant={statusData ? 'secondary' : 'primary'}
-                                        disabled={false} // Always clickable to allow Override
-                                    />
-                                    {statusData && (
-                                        <Text style={{ textAlign: 'center', marginTop: 8, ...typography.caption, color: colors.textDim }}>
-                                            Tap to re-log (Duplicate)
-                                        </Text>
-                                    )}
-                                </View>
-                            )}
-                        </View>
-                    );
-                })}
-            </ScrollView>
+                                                <View style={styles.actions}>
+                                                    {isSwapped ? (
+                                                        <Pressable
+                                                            onPress={() => undoSwap(slot.id)}
+                                                            style={styles.undoButton}
+                                                            disabled={isCompleted || isPartial} // Disable swaps if done
+                                                        >
+                                                            <Ionicons name="refresh" size={18} color={isCompleted ? colors.textDim : colors.accent} />
+                                                            <Text style={[styles.undoText, isCompleted && { color: colors.textDim }]}>Undo</Text>
+                                                        </Pressable>
+                                                    ) : (
+                                                        <Pressable
+                                                            onPress={() => handleSwapPress(slot)}
+                                                            style={styles.swapButton}
+                                                            disabled={isCompleted || isPartial} // Disable swaps if done
+                                                        >
+                                                            <Ionicons name="swap-horizontal" size={20} color={isCompleted ? colors.textDim : colors.secondary} />
+                                                        </Pressable>
+                                                    )}
+                                                </View>
+                                            </View>
+                                        </Card>
+                                    );
+                                })}
+
+                                <Button
+                                    title={statusData ? (isCompleted ? "Completed" : "Incomplete") : "Start This Workout"}
+                                    onPress={() => handleStartPress(day, statusData)}
+                                    style={{ marginTop: spacing.m, opacity: statusData ? 0.6 : 1 }}
+                                    variant={statusData ? 'secondary' : 'primary'}
+                                    disabled={false} // Always clickable to allow Override
+                                />
+                                {statusData && (
+                                    <Text style={{ textAlign: 'center', marginTop: 8, ...typography.caption, color: colors.textDim }}>
+                                        Tap to re-log (Duplicate)
+                                    </Text>
+                                )}
+                            </View>
+                        )}
+                    </View>
+                );
+            })}
 
             {/* Swap Modal */}
             <Modal
@@ -536,7 +534,7 @@ export default function MicrocycleScreen() {
                     </View>
                 </View>
             </Modal>
-        </SafeAreaView>
+        </AppScreen>
     );
 }
 

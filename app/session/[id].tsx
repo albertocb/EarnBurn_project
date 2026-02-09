@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { AppScreen } from '../../src/components/AppScreen';
 import { Card } from '../../src/components/common/Card';
 import { programRepository } from '../../src/repositories/programRepository';
 import { borderRadius, colors, spacing, typography } from '../../src/theme/theme';
@@ -30,13 +30,13 @@ export default function SessionDetail() {
     };
 
     if (!session) return (
-        <SafeAreaView style={styles.container}>
+        <AppScreen contentContainerStyle={styles.container}>
             <Text style={styles.loading}>Loading...</Text>
-        </SafeAreaView>
+        </AppScreen>
     );
 
     return (
-        <SafeAreaView style={styles.container}>
+        <AppScreen contentContainerStyle={styles.scroll}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color={colors.primary} />
@@ -44,26 +44,26 @@ export default function SessionDetail() {
                 <Text style={styles.title}>{session.name}</Text>
             </View>
 
-            <ScrollView contentContainerStyle={styles.scroll}>
-                {exercises.map((exercise, index) => (
-                    <Card key={exercise.id} style={styles.exerciseCard}>
-                        <View style={styles.exerciseHeader}>
-                            <Text style={styles.exerciseIndex}>{index + 1}</Text>
-                            <Text style={styles.exerciseName}>{exercise.name}</Text>
-                        </View>
 
-                        <View style={styles.setsContainer}>
-                            {exercise.sets.map((set: any, sIndex: number) => (
-                                <View key={sIndex} style={styles.setRow}>
-                                    <View style={styles.setSimple}>
-                                        <Text style={styles.setLabel}>{set.numSets} x {set.targetReps}</Text>
-                                    </View>
+            {exercises.map((exercise, index) => (
+                <Card key={exercise.id} style={styles.exerciseCard}>
+                    <View style={styles.exerciseHeader}>
+                        <Text style={styles.exerciseIndex}>{index + 1}</Text>
+                        <Text style={styles.exerciseName}>{exercise.name}</Text>
+                    </View>
+
+                    <View style={styles.setsContainer}>
+                        {exercise.sets.map((set: any, sIndex: number) => (
+                            <View key={sIndex} style={styles.setRow}>
+                                <View style={styles.setSimple}>
+                                    <Text style={styles.setLabel}>{set.numSets} x {set.targetReps}</Text>
                                 </View>
-                            ))}
-                        </View>
-                    </Card>
-                ))}
-            </ScrollView>
+                            </View>
+                        ))}
+                    </View>
+                </Card>
+            ))}
+
 
             <View style={styles.footer}>
                 <TouchableOpacity style={styles.startButton} onPress={() => {
@@ -73,7 +73,7 @@ export default function SessionDetail() {
                     <Text style={styles.startButtonText}>Start Workout</Text>
                 </TouchableOpacity>
             </View>
-        </SafeAreaView>
+        </AppScreen>
     );
 }
 

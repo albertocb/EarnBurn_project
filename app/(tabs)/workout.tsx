@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { AppScreen } from '../../src/components/AppScreen';
 import { Button } from '../../src/components/common/Button';
 import { workoutDayStatusRepository } from '../../src/repositories/workoutDayStatusRepository';
 import { workoutRepository } from '../../src/repositories/workoutRepository';
@@ -236,7 +236,7 @@ export default function WorkoutScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <AppScreen contentContainerStyle={styles.scroll}>
             <View style={styles.header}>
                 <View>
                     <Text style={styles.title}>{draft ? draft.dayName : 'Push Hypertrophy'}</Text>
@@ -246,81 +246,79 @@ export default function WorkoutScreen() {
                 </View>
             </View>
 
-            <ScrollView contentContainerStyle={styles.scroll}>
-                {exercises.map((exercise) => (
-                    <View key={exercise.id} style={styles.exerciseContainer}>
-                        <View style={styles.exerciseHeader}>
-                            <Text style={styles.exerciseName}>{exercise.name}</Text>
-                            <View style={styles.targets}>
-                                {exercise.prescription ? (
-                                    <Text style={styles.targetText}>{exercise.prescription}</Text>
-                                ) : (
-                                    <>
-                                        <Text style={styles.targetText}>{exercise.targetReps} Reps</Text>
-                                        <Text style={styles.targetText}>@ RPE {exercise.targetRPE ?? 8}</Text>
-                                    </>
-                                )}
-                            </View>
+            {exercises.map((exercise) => (
+                <View key={exercise.id} style={styles.exerciseContainer}>
+                    <View style={styles.exerciseHeader}>
+                        <Text style={styles.exerciseName}>{exercise.name}</Text>
+                        <View style={styles.targets}>
+                            {exercise.prescription ? (
+                                <Text style={styles.targetText}>{exercise.prescription}</Text>
+                            ) : (
+                                <>
+                                    <Text style={styles.targetText}>{exercise.targetReps} Reps</Text>
+                                    <Text style={styles.targetText}>@ RPE {exercise.targetRPE ?? 8}</Text>
+                                </>
+                            )}
                         </View>
-
-                        {exercise.sets.map((set, index) => (
-                            <View
-                                key={set.id}
-                                style={[styles.setRow, set.completed && styles.setRowCompleted]}
-                            >
-                                <View style={styles.setIndex}>
-                                    <Text style={[styles.setNumber, set.completed && styles.completedText]}>{index + 1}</Text>
-                                </View>
-
-                                <View style={styles.setData}>
-                                    <Text style={styles.label}>Previous</Text>
-                                    <Text style={[styles.value, set.completed && styles.completedText]}>{set.weight}kg x {set.reps}</Text>
-                                </View>
-
-                                <View style={[styles.inputContainer, set.completed && styles.inputContainerCompleted]}>
-                                    <TextInput
-                                        style={[styles.inputValue, set.completed && styles.completedText]}
-                                        value={set.weightText !== undefined ? set.weightText : String(set.weight)}
-                                        onChangeText={(text) => handleWeightChange(exercise.id, set.id, text)}
-                                        onBlur={() => handleWeightBlur(exercise.id, set.id, set.weightText, set.weight)}
-                                        keyboardType="decimal-pad"
-                                        placeholder="kg"
-                                        placeholderTextColor={colors.textDim}
-                                        selectTextOnFocus
-                                    />
-                                </View>
-
-                                <View style={[styles.inputContainer, set.completed && styles.inputContainerCompleted]}>
-                                    <TextInput
-                                        style={[styles.inputValue, set.completed && styles.completedText]}
-                                        value={set.repsText !== undefined ? set.repsText : String(set.reps)}
-                                        onChangeText={(text) => handleRepsChange(exercise.id, set.id, text)}
-                                        onBlur={() => handleRepsBlur(exercise.id, set.id, set.repsText, set.reps)}
-                                        keyboardType="number-pad"
-                                        placeholder="reps"
-                                        placeholderTextColor={colors.textDim}
-                                        selectTextOnFocus
-                                    />
-                                </View>
-
-                                <TouchableOpacity
-                                    style={[styles.checkCircle, set.completed && styles.checkCircleCompleted]}
-                                    onPress={() => toggleSetCompletion(exercise.id, set.id)}
-                                >
-                                    {set.completed && <Ionicons name="checkmark" size={20} color={colors.background} />}
-                                </TouchableOpacity>
-                            </View>
-                        ))}
                     </View>
-                ))}
 
-                <Button
-                    title="Finish Workout"
-                    onPress={handleFinishWorkout}
-                    style={{ marginTop: spacing.xl, marginBottom: spacing.xl }}
-                />
-            </ScrollView>
-        </SafeAreaView>
+                    {exercise.sets.map((set, index) => (
+                        <View
+                            key={set.id}
+                            style={[styles.setRow, set.completed && styles.setRowCompleted]}
+                        >
+                            <View style={styles.setIndex}>
+                                <Text style={[styles.setNumber, set.completed && styles.completedText]}>{index + 1}</Text>
+                            </View>
+
+                            <View style={styles.setData}>
+                                <Text style={styles.label}>Previous</Text>
+                                <Text style={[styles.value, set.completed && styles.completedText]}>{set.weight}kg x {set.reps}</Text>
+                            </View>
+
+                            <View style={[styles.inputContainer, set.completed && styles.inputContainerCompleted]}>
+                                <TextInput
+                                    style={[styles.inputValue, set.completed && styles.completedText]}
+                                    value={set.weightText !== undefined ? set.weightText : String(set.weight)}
+                                    onChangeText={(text) => handleWeightChange(exercise.id, set.id, text)}
+                                    onBlur={() => handleWeightBlur(exercise.id, set.id, set.weightText, set.weight)}
+                                    keyboardType="decimal-pad"
+                                    placeholder="kg"
+                                    placeholderTextColor={colors.textDim}
+                                    selectTextOnFocus
+                                />
+                            </View>
+
+                            <View style={[styles.inputContainer, set.completed && styles.inputContainerCompleted]}>
+                                <TextInput
+                                    style={[styles.inputValue, set.completed && styles.completedText]}
+                                    value={set.repsText !== undefined ? set.repsText : String(set.reps)}
+                                    onChangeText={(text) => handleRepsChange(exercise.id, set.id, text)}
+                                    onBlur={() => handleRepsBlur(exercise.id, set.id, set.repsText, set.reps)}
+                                    keyboardType="number-pad"
+                                    placeholder="reps"
+                                    placeholderTextColor={colors.textDim}
+                                    selectTextOnFocus
+                                />
+                            </View>
+
+                            <TouchableOpacity
+                                style={[styles.checkCircle, set.completed && styles.checkCircleCompleted]}
+                                onPress={() => toggleSetCompletion(exercise.id, set.id)}
+                            >
+                                {set.completed && <Ionicons name="checkmark" size={20} color={colors.background} />}
+                            </TouchableOpacity>
+                        </View>
+                    ))}
+                </View>
+            ))}
+
+            <Button
+                title="Finish Workout"
+                onPress={handleFinishWorkout}
+                style={{ marginTop: spacing.xl, marginBottom: spacing.xl }}
+            />
+        </AppScreen>
     );
 }
 

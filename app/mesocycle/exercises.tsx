@@ -1,7 +1,7 @@
 import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppScreen } from '../../src/components/AppScreen';
 import { Button } from '../../src/components/common/Button';
 import { Card } from '../../src/components/common/Card';
 import { Input } from '../../src/components/common/Input';
@@ -33,7 +33,7 @@ export default function ExerciseSelection() {
     };
 
     return (
-        <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
+        <AppScreen scroll={false} style={styles.container}>
             <Stack.Screen
                 options={{
                     title: 'Select Exercises',
@@ -74,6 +74,7 @@ export default function ExerciseSelection() {
 
             <FlatList
                 data={filteredExercises}
+                style={{ flex: 1 }}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.listContent}
                 renderItem={({ item }) => {
@@ -106,7 +107,7 @@ export default function ExerciseSelection() {
                 </View>
                 <Button title="Save Selection" onPress={handleSave} />
             </View>
-        </SafeAreaView>
+        </AppScreen>
     );
 }
 

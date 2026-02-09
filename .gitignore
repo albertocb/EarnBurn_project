@@ -42,4 +42,5 @@ app-example
 /ios
 /android
 
-.agent
+# Ignore local agent configurations
+.agent/

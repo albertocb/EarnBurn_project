@@ -1,4 +1,4 @@
-import { integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { integer, primaryKey, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 // --- User & Metrics ---
 export const athleteProfile = sqliteTable('athlete_profile', {
@@ -106,3 +106,14 @@ export const setEntries = sqliteTable('set_entries', {
     rpe: real('rpe'),
     isWarmup: integer('is_warmup', { mode: 'boolean' }).default(false),
 });
+
+export const workoutDayStatus = sqliteTable('workout_day_status', {
+    week: text('week').notNull(),
+    dayId: text('day_id').notNull(),
+    status: text('status').notNull(), // 'completed' | 'partial'
+    totalExercises: integer('total_exercises').notNull(),
+    completedExercises: integer('completed_exercises').notNull(),
+    completedAt: text('completed_at').notNull(),
+}, (table) => ({
+    pk: primaryKey({ columns: [table.week, table.dayId] }),
+}));

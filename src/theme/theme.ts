@@ -11,6 +11,9 @@ export const colors = {
   border: '#3F3F46',
   success: '#00FF99',
   error: '#FF4444',
+  warning: '#FFC107', // Amber
+  warningBg: 'rgba(255, 193, 7, 0.1)',
+  dim: '#3F3F46', // Muted Gray
   overlay: 'rgba(0,0,0,0.7)',
 };
 

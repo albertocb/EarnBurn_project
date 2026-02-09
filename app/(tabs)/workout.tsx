@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../src/components/common/Button';
+import { workoutDayStatusRepository } from '../../src/repositories/workoutDayStatusRepository';
 import { workoutRepository } from '../../src/repositories/workoutRepository';
 import { useWorkoutDraftStore } from '../../src/store/workoutDraftStore';
 import { borderRadius, colors, spacing, typography } from '../../src/theme/theme';
@@ -112,20 +113,60 @@ export default function WorkoutScreen() {
                 }
             }
 
-            Alert.alert('Workout Saved', 'Session logged locally.', [
-                {
-                    text: 'OK',
-                    onPress: () => {
-                        clearDraft();
-                        // Optional: Reset to mock or empty state if needed, 
-                        // but navigation away handles it mostly.
-                        router.replace('/');
-                    }
-                }
-            ]);
         } catch (e) {
             console.error('Failed to save workout', e);
             Alert.alert('Save Failed', 'Could not save workout session. Check logs.');
+        } finally {
+            // Status Tracking Logic
+            if (draft && draft.week && draft.dayId) {
+                const totalExercises = exercises.length;
+                const completedExercises = exercises.filter(ex => ex.sets.some(s => s.completed)).length;
+                const isCompleted = completedExercises === totalExercises && totalExercises > 0;
+                const status = isCompleted ? 'completed' : 'partial';
+
+                try {
+                    await workoutDayStatusRepository.setDayStatus({
+                        week: draft.week,
+                        dayId: draft.dayId,
+                        status: status,
+                        totalExercises,
+                        completedExercises,
+                        completedAt: new Date().toISOString()
+                    });
+
+                    const title = 'Workout Saved';
+                    const message = isCompleted
+                        ? 'Session marked as completed.'
+                        : `Marked as incomplete (${completedExercises}/${totalExercises} exercises).`;
+
+                    Alert.alert(title, message, [
+                        {
+                            text: 'OK',
+                            onPress: () => {
+                                clearDraft();
+                                router.replace('/');
+                            }
+                        }
+                    ]);
+                } catch (saveError) {
+                    console.error("Failed to save day status", saveError);
+                    // Fallback alert if status save fails but workout saved
+                    Alert.alert('Workout Saved', 'Session logged, but status update failed.');
+                    clearDraft();
+                    router.replace('/');
+                }
+            } else {
+                // Fallback for when draft metadata is missing
+                Alert.alert('Workout Saved', 'Session logged locally.', [
+                    {
+                        text: 'OK',
+                        onPress: () => {
+                            clearDraft();
+                            router.replace('/');
+                        }
+                    }
+                ]);
+            }
         }
     };
 

@@ -1,11 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../src/components/common/Button';
 import { Card } from '../../src/components/common/Card';
 import { exercises as allExercises } from '../../src/data/exercises';
+import { workoutDayStatusRepository } from '../../src/repositories/workoutDayStatusRepository';
 import { useProgramStore } from '../../src/store/programStore';
 import { useWorkoutDraftStore } from '../../src/store/workoutDraftStore';
 import { borderRadius, colors, spacing, typography } from '../../src/theme/theme';
@@ -176,10 +177,53 @@ const generatePlan = (
 
 
 export default function MicrocycleScreen() {
-    const { week, title, type, mesocycleId } = useLocalSearchParams();
+    const { week, title, mesocycleId } = useLocalSearchParams();
     const router = useRouter();
     const { macrocycles } = useProgramStore();
     const { setDraft } = useWorkoutDraftStore();
+
+    // Local state for statuses
+    const [dayStatuses, setDayStatuses] = useState<Record<string, any>>({});
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+    // Fetch statuses on focus/mount
+    useEffect(() => {
+        const fetchStatuses = async () => {
+            if (typeof week === 'string') {
+                const statuses = await workoutDayStatusRepository.getStatusesForWeek(week);
+                setDayStatuses(statuses);
+            }
+        };
+        fetchStatuses();
+    }, [week, refreshTrigger]);
+
+    // Refresh when coming back from workout (simple approach using focus listener or just relying on mount if stack ensures rebuild - but router.push might keep it alive)
+    // For now, let's also stick a simple focus effect if needed, or rely on the user navigating back and forth.
+    // Actually, expo-router Stack keeps screens mounted. Ideally useFocusEffect.
+    // Let's add useFocusEffect from expo-router (it is just re-export of React Navigation's).
+    // "useFocusEffect" is not directly exported from expo-router usually, need to import from 'expo-router' if available or '@react-navigation/native'.
+    // Since we don't have explicit deps check, I'll rely on a simple interval or just force remount if I can't confirm import.
+    // BUT, wait, we can just use the fact that router.push('/workout') pushes on top, and back pops it.
+    // So this screen DOES NOT UNMOUNT. We need a way to refresh. 
+    // Let's assume standard React Native generic refresh for now:
+    // We can add a "pull to refresh" on ScrollView or just rely on `useCallback` with `useFocusEffect` if we had it.
+    // Let's Import `useFocusEffect` from `expo-router`? It is valid in newer versions.
+    // I entered this block to Replace the component content, so let's try to import it at the top level first.
+    // Ah, I need to do multiple edits. I'll stick to a simple "Reload" button or just standard useEffect with a "isFocused" check if I can gets it.
+    // Let's try to be robust: simple onLayout or use a known hook.
+    // Actually, I can use `usePathname`? No.
+    // I'll stick to `useEffect` with a timer for 1s just to be safe OR just add a "Refresh" button if status doesn't update.
+    // BETTER: I'll use `useFocusEffect` if I can confirm imports. I'll try adding the import in a separate step.
+    // For now, I will write the logic assuming `useFocusEffect` is available or I will unimplemented it.
+    // Let's just use a simple `React.useCallback` and pass it to `useFocusEffect` if I can import it.
+    // Since I can't verify the import right now without reading docs or risking error, I'll use a standard `useEffect` on `week` and maybe a manual triggered refresh.
+
+    // Correction: I can just use a `useEffect` that listens to `navigation` focus events if I had access to navigation.
+    // Let's just keep it simple: fetch on mount. If user comes back, they might need to reload. 
+    // WAIT! `router.push` puts workout on TOP. When they finish and `router.replace('/')` (back to plan), then go back to here, it WILL remount.
+    // The previous flow was: Plan -> Microcycle -> Workout -> (Finish) -> Plan.
+    // So Microcycle is UNMOUNTED in the standard "Finish" flow because we navigate to Root (Plan).
+    // So `useEffect` on mount IS SUFFICIENT!
 
     // Generate Plan (Memoized)
     const plan = useMemo(() => {
@@ -197,6 +241,10 @@ export default function MicrocycleScreen() {
     // Modal state
     const [swapModalVisible, setSwapModalVisible] = useState(false);
     const [activeSwapSlot, setActiveSwapSlot] = useState<ExerciseSlot | null>(null);
+
+    // Override Confirm
+    const [overrideAlertVisible, setOverrideAlertVisible] = useState(false);
+    const [pendingOverrideDay, setPendingOverrideDay] = useState<WorkoutDay | null>(null);
 
     const toggleDay = (dayId: string) => {
         setExpandedDays((prev) => ({ ...prev, [dayId]: !prev[dayId] }));
@@ -231,7 +279,7 @@ export default function MicrocycleScreen() {
         return slot.primary;
     };
 
-    const handleStartWorkout = (day: WorkoutDay) => {
+    const startWorkoutFlow = (day: WorkoutDay) => {
         const draftExercises = day.exercises.map(slot => {
             const activeEx = getActiveExercise(slot);
             return {
@@ -251,6 +299,16 @@ export default function MicrocycleScreen() {
         });
 
         router.push('/workout');
+    };
+
+    const handleStartPress = (day: WorkoutDay, status: any) => {
+        if (status) {
+            // Already completed or partial
+            setPendingOverrideDay(day);
+            setOverrideAlertVisible(true);
+        } else {
+            startWorkoutFlow(day);
+        }
     };
 
     const displayTitle = typeof title === 'string' ? title : `Week ${week} Microcycle`;
@@ -275,15 +333,39 @@ export default function MicrocycleScreen() {
 
                 {plan.map((day) => {
                     const isExpanded = !!expandedDays[day.id];
+                    const statusData = dayStatuses[day.id];
+                    const isCompleted = statusData?.status === 'completed';
+                    const isPartial = statusData?.status === 'partial';
+
+                    // Dynamic Styles based on status
+                    let headerStyle: any = [styles.dayHeader];
+                    if (isExpanded) headerStyle.push(styles.dayHeaderActive);
+                    if (isCompleted) headerStyle.push(styles.dayHeaderCompleted);
+                    if (isPartial) headerStyle.push(styles.dayHeaderPartial);
+
                     return (
                         <View key={day.id} style={styles.dayContainer}>
                             <Pressable
                                 onPress={() => toggleDay(day.id)}
-                                style={[styles.dayHeader, isExpanded && styles.dayHeaderActive]}
+                                style={headerStyle}
                             >
-                                <View>
-                                    <Text style={styles.dayTitle}>{day.name}</Text>
-                                    <Text style={styles.dayFocus}>{day.focus}</Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <View>
+                                        <Text style={[styles.dayTitle, isCompleted && { color: colors.textSecondary }]}>{day.name}</Text>
+                                        <Text style={styles.dayFocus}>{day.focus}</Text>
+                                    </View>
+                                    {isCompleted && (
+                                        <View style={styles.statusBadgeCompleted}>
+                                            <Ionicons name="checkmark-circle" size={14} color={colors.textSecondary} />
+                                            <Text style={styles.statusTextCompleted}>Done</Text>
+                                        </View>
+                                    )}
+                                    {isPartial && (
+                                        <View style={styles.statusBadgePartial}>
+                                            <Ionicons name="alert-circle" size={14} color={colors.warning} />
+                                            <Text style={styles.statusTextPartial}>Partial</Text>
+                                        </View>
+                                    )}
                                 </View>
                                 <Ionicons
                                     name={isExpanded ? "chevron-up" : "chevron-down"}
@@ -293,7 +375,7 @@ export default function MicrocycleScreen() {
                             </Pressable>
 
                             {isExpanded && (
-                                <View style={styles.exercisesList}>
+                                <View style={[styles.exercisesList, (isCompleted || isPartial) && { opacity: 0.8 }]}>
                                     {day.exercises.map((slot) => {
                                         const activeEx = getActiveExercise(slot);
                                         const isSwapped = !!swaps[slot.id];
@@ -320,16 +402,18 @@ export default function MicrocycleScreen() {
                                                             <Pressable
                                                                 onPress={() => undoSwap(slot.id)}
                                                                 style={styles.undoButton}
+                                                                disabled={isCompleted || isPartial} // Disable swaps if done
                                                             >
-                                                                <Ionicons name="refresh" size={18} color={colors.accent} />
-                                                                <Text style={styles.undoText}>Undo</Text>
+                                                                <Ionicons name="refresh" size={18} color={isCompleted ? colors.textDim : colors.accent} />
+                                                                <Text style={[styles.undoText, isCompleted && { color: colors.textDim }]}>Undo</Text>
                                                             </Pressable>
                                                         ) : (
                                                             <Pressable
                                                                 onPress={() => handleSwapPress(slot)}
                                                                 style={styles.swapButton}
+                                                                disabled={isCompleted || isPartial} // Disable swaps if done
                                                             >
-                                                                <Ionicons name="swap-horizontal" size={20} color={colors.secondary} />
+                                                                <Ionicons name="swap-horizontal" size={20} color={isCompleted ? colors.textDim : colors.secondary} />
                                                             </Pressable>
                                                         )}
                                                     </View>
@@ -339,10 +423,17 @@ export default function MicrocycleScreen() {
                                     })}
 
                                     <Button
-                                        title="Start This Workout"
-                                        onPress={() => handleStartWorkout(day)}
-                                        style={{ marginTop: spacing.m }}
+                                        title={statusData ? (isCompleted ? "Completed" : "Incomplete") : "Start This Workout"}
+                                        onPress={() => handleStartPress(day, statusData)}
+                                        style={{ marginTop: spacing.m, opacity: statusData ? 0.6 : 1 }}
+                                        variant={statusData ? 'secondary' : 'primary'}
+                                        disabled={false} // Always clickable to allow Override
                                     />
+                                    {statusData && (
+                                        <Text style={{ textAlign: 'center', marginTop: 8, ...typography.caption, color: colors.textDim }}>
+                                            Tap to re-log (Duplicate)
+                                        </Text>
+                                    )}
                                 </View>
                             )}
                         </View>
@@ -390,6 +481,38 @@ export default function MicrocycleScreen() {
                                 title="Cancel"
                                 variant="secondary"
                                 onPress={() => setSwapModalVisible(false)}
+                            />
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+
+            {/* Override Alert Modal (Simulated Alert) */}
+            <Modal
+                visible={overrideAlertVisible}
+                animationType="fade"
+                transparent={true}
+                onRequestClose={() => setOverrideAlertVisible(false)}
+            >
+                <View style={[styles.modalOverlay, { justifyContent: 'center', padding: spacing.xl }]}>
+                    <View style={[styles.modalContent, { minHeight: undefined, borderRadius: borderRadius.l }]}>
+                        <Text style={styles.modalTitle}>Re-log Workout?</Text>
+                        <Text style={{ ...typography.body, color: colors.textSecondary, marginVertical: spacing.m }}>
+                            This workout is already marked as {dayStatuses[pendingOverrideDay?.id || '']?.status}.
+                            Starting it again will create a NEW session log.
+                        </Text>
+                        <View style={{ gap: spacing.m }}>
+                            <Button
+                                title="Yes, Start New Session"
+                                onPress={() => {
+                                    setOverrideAlertVisible(false);
+                                    if (pendingOverrideDay) startWorkoutFlow(pendingOverrideDay);
+                                }}
+                            />
+                            <Button
+                                title="Cancel"
+                                variant="secondary"
+                                onPress={() => setOverrideAlertVisible(false)}
                             />
                         </View>
                     </View>
@@ -510,4 +633,47 @@ const styles = StyleSheet.create({
     },
     altName: { ...typography.bodyBold, color: colors.text },
     altDesc: { ...typography.caption, color: colors.textDim },
+
+    // Status Styles
+    dayHeaderCompleted: {
+        backgroundColor: colors.surface,
+        borderWidth: 1,
+        borderColor: colors.border,
+        opacity: 0.8
+    },
+    dayHeaderPartial: {
+        backgroundColor: colors.warningBg,
+        borderColor: colors.warning,
+        borderWidth: 1,
+    },
+    statusBadgeCompleted: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: colors.surfaceHighlight,
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: borderRadius.round,
+        marginLeft: spacing.m,
+        gap: 4
+    },
+    statusBadgePartial: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: colors.warningBg,
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: borderRadius.round,
+        marginLeft: spacing.m,
+        gap: 4
+    },
+    statusTextCompleted: {
+        ...typography.caption,
+        color: colors.textSecondary,
+        fontWeight: 'bold'
+    },
+    statusTextPartial: {
+        ...typography.caption,
+        color: colors.warning,
+        fontWeight: 'bold'
+    }
 });

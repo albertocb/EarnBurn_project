@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../src/components/common/Button';
 import { workoutDayStatusRepository } from '../../src/repositories/workoutDayStatusRepository';
@@ -15,6 +15,8 @@ interface SetLog {
     weight: number;
     rpe?: number;
     completed: boolean;
+    weightText?: string;
+    repsText?: string;
 }
 
 interface Exercise {
@@ -77,7 +79,17 @@ export default function WorkoutScreen() {
         }
     }, [draft]);
 
-    const toggleSet = (exerciseId: string, setId: string) => {
+    const updateSet = (exerciseId: string, setId: string, updates: Partial<SetLog>) => {
+        setExercises(prev => prev.map(ex => {
+            if (ex.id !== exerciseId) return ex;
+            return {
+                ...ex,
+                sets: ex.sets.map(s => s.id === setId ? { ...s, ...updates } : s)
+            };
+        }));
+    };
+
+    const toggleSetCompletion = (exerciseId: string, setId: string) => {
         setExercises(prev => prev.map(ex => {
             if (ex.id !== exerciseId) return ex;
             return {
@@ -85,6 +97,39 @@ export default function WorkoutScreen() {
                 sets: ex.sets.map(s => s.id === setId ? { ...s, completed: !s.completed } : s)
             };
         }));
+    };
+
+    const handleWeightChange = (exerciseId: string, setId: string, text: string) => {
+        // Parse weight
+        const normalizedText = text.replace(',', '.');
+        const weightVal = parseFloat(normalizedText);
+
+        const updates: Partial<SetLog> = { weightText: text };
+        if (!isNaN(weightVal)) {
+            updates.weight = weightVal;
+        }
+        updateSet(exerciseId, setId, updates);
+    };
+
+    const handleRepsChange = (exerciseId: string, setId: string, text: string) => {
+        const repsVal = parseInt(text, 10);
+        const updates: Partial<SetLog> = { repsText: text };
+        if (!isNaN(repsVal)) {
+            updates.reps = repsVal;
+        }
+        updateSet(exerciseId, setId, updates);
+    };
+
+    const handleWeightBlur = (exerciseId: string, setId: string, currentText: string | undefined, currentWeight: number) => {
+        if (!currentText || currentText.trim() === '') {
+            updateSet(exerciseId, setId, { weight: 0, weightText: '' });
+        }
+    };
+
+    const handleRepsBlur = (exerciseId: string, setId: string, currentText: string | undefined, currentReps: number) => {
+        if (!currentText || currentText.trim() === '') {
+            updateSet(exerciseId, setId, { reps: 0, repsText: '' });
+        }
     };
 
     const handleFinishWorkout = async () => {
@@ -211,11 +256,9 @@ export default function WorkoutScreen() {
                         </View>
 
                         {exercise.sets.map((set, index) => (
-                            <TouchableOpacity
+                            <View
                                 key={set.id}
                                 style={[styles.setRow, set.completed && styles.setRowCompleted]}
-                                onPress={() => toggleSet(exercise.id, set.id)}
-                                activeOpacity={0.7}
                             >
                                 <View style={styles.setIndex}>
                                     <Text style={[styles.setNumber, set.completed && styles.completedText]}>{index + 1}</Text>
@@ -226,20 +269,39 @@ export default function WorkoutScreen() {
                                     <Text style={[styles.value, set.completed && styles.completedText]}>{set.weight}kg x {set.reps}</Text>
                                 </View>
 
-                                <View style={styles.inputContainer}>
-                                    <Text style={[styles.inputValue, set.completed && styles.completedText]}>{set.weight}</Text>
-                                    <Text style={[styles.unit, set.completed && styles.completedText]}>kg</Text>
+                                <View style={[styles.inputContainer, set.completed && styles.inputContainerCompleted]}>
+                                    <TextInput
+                                        style={[styles.inputValue, set.completed && styles.completedText]}
+                                        value={set.weightText !== undefined ? set.weightText : String(set.weight)}
+                                        onChangeText={(text) => handleWeightChange(exercise.id, set.id, text)}
+                                        onBlur={() => handleWeightBlur(exercise.id, set.id, set.weightText, set.weight)}
+                                        keyboardType="decimal-pad"
+                                        placeholder="kg"
+                                        placeholderTextColor={colors.textDim}
+                                        selectTextOnFocus
+                                    />
                                 </View>
 
-                                <View style={styles.inputContainer}>
-                                    <Text style={[styles.inputValue, set.completed && styles.completedText]}>{set.reps}</Text>
-                                    <Text style={[styles.unit, set.completed && styles.completedText]}>reps</Text>
+                                <View style={[styles.inputContainer, set.completed && styles.inputContainerCompleted]}>
+                                    <TextInput
+                                        style={[styles.inputValue, set.completed && styles.completedText]}
+                                        value={set.repsText !== undefined ? set.repsText : String(set.reps)}
+                                        onChangeText={(text) => handleRepsChange(exercise.id, set.id, text)}
+                                        onBlur={() => handleRepsBlur(exercise.id, set.id, set.repsText, set.reps)}
+                                        keyboardType="number-pad"
+                                        placeholder="reps"
+                                        placeholderTextColor={colors.textDim}
+                                        selectTextOnFocus
+                                    />
                                 </View>
 
-                                <View style={[styles.checkCircle, set.completed && styles.checkCircleCompleted]}>
+                                <TouchableOpacity
+                                    style={[styles.checkCircle, set.completed && styles.checkCircleCompleted]}
+                                    onPress={() => toggleSetCompletion(exercise.id, set.id)}
+                                >
                                     {set.completed && <Ionicons name="checkmark" size={20} color={colors.background} />}
-                                </View>
-                            </TouchableOpacity>
+                                </TouchableOpacity>
+                            </View>
                         ))}
                     </View>
                 ))}
@@ -303,15 +365,21 @@ const styles = StyleSheet.create({
     inputContainer: {
         backgroundColor: colors.surfaceHighlight,
         borderRadius: borderRadius.s,
-        paddingHorizontal: spacing.m,
+        paddingHorizontal: spacing.s,
         paddingVertical: spacing.s,
         flexDirection: 'row',
-        alignItems: 'baseline',
-        minWidth: 70,
+        alignItems: 'center',
+        width: 70,
         justifyContent: 'center',
-        marginRight: spacing.s
+        marginRight: spacing.s,
+        borderWidth: 1,
+        borderColor: 'transparent'
     },
-    inputValue: { ...typography.h3, color: colors.text, marginRight: 2 },
+    inputContainerCompleted: {
+        backgroundColor: 'transparent',
+        borderColor: colors.success + '40',
+    },
+    inputValue: { ...typography.h3, color: colors.text, textAlign: 'center', width: '100%', padding: 0 },
     unit: { ...typography.caption, color: colors.textDim },
 
     checkCircle: {

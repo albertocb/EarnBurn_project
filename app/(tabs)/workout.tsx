@@ -155,9 +155,15 @@ export default function WorkoutScreen() {
                 } catch (saveError) {
                     console.error("Failed to save day status", saveError);
                     // Fallback alert if status save fails but workout saved
-                    Alert.alert('Workout Saved', 'Session logged, but status update failed.');
-                    clearDraft();
-                    router.replace('/');
+                    Alert.alert('Workout Saved', 'Session logged, but status update failed.', [
+                        {
+                            text: 'OK',
+                            onPress: () => {
+                                clearDraft();
+                                router.replace('/');
+                            }
+                        }
+                    ]);
                 }
             } else {
                 // Fallback for when draft metadata is missing

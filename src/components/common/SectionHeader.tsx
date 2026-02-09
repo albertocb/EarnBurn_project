@@ -73,8 +73,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        // Visually center text/emoji on Android using translateY
-        transform: [{ translateY: Platform.OS === 'android' ? 2 : 0 }],
     },
     pillIcon: {
         fontSize: 18,
@@ -83,6 +81,8 @@ const styles = StyleSheet.create({
         color: colors.text,
         includeFontPadding: false,
         textAlignVertical: 'center',
+        // Fine-tune emoji vertical position on Android
+        transform: [{ translateY: Platform.OS === 'android' ? 1 : 0 }],
     },
     pillTitle: {
         ...typography.sectionHeader,

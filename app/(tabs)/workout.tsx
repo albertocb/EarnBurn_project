@@ -88,6 +88,7 @@ export default function WorkoutScreen() {
     };
 
     const handleFinishWorkout = async () => {
+        let savedOk = false;
         try {
             const sessionId = Date.now().toString();
             await workoutRepository.createSession({
@@ -112,11 +113,14 @@ export default function WorkoutScreen() {
                     }
                 }
             }
+            savedOk = true;
 
         } catch (e) {
             console.error('Failed to save workout', e);
             Alert.alert('Save Failed', 'Could not save workout session. Check logs.');
-        } finally {
+        }
+
+        if (savedOk) {
             // Status Tracking Logic
             if (draft && draft.week && draft.dayId) {
                 const totalExercises = exercises.length;

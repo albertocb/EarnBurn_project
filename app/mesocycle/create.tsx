@@ -1,6 +1,6 @@
 import { Stack, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../src/components/common/Button';
 import { Select } from '../../src/components/common/Select';
@@ -8,7 +8,7 @@ import { Slider } from '../../src/components/common/Slider';
 import { useProgramStore } from '../../src/store/programStore';
 import { useSelectionStore } from '../../src/store/selectionStore';
 import { Focus, Mesocycle } from '../../src/store/types';
-import { colors, spacing, typography } from '../../src/theme/theme';
+import { borderRadius, colors, spacing, typography } from '../../src/theme/theme';
 
 export default function CreateMesocycle() {
     const router = useRouter();
@@ -52,20 +52,45 @@ export default function CreateMesocycle() {
     return (
         <SafeAreaView style={styles.container}>
             <Stack.Screen options={{ title: 'Add Mesocycle', headerBackTitle: 'Cancel' }} />
-            <ScrollView contentContainerStyle={styles.content}>
+            <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 100, paddingTop: spacing.xl }]}>
 
-                <Select
-                    label="Split Strategy"
-                    value={splitStrategy}
-                    onChange={(v) => setSplitStrategy(v as any)}
-                    options={[
-                        { label: 'Full-Body High Frequency', value: 'Full Body' },
-                        { label: 'Upper / Lower', value: 'Upper/Lower' },
-                        { label: 'Push / Pull / Legs', value: 'PPL' },
-                    ]}
-                />
+                <Text style={styles.sectionLabel}>Split Strategy</Text>
+                <View style={styles.splitOptionsContainer}>
+                    {[
+                        { label: 'Full-Body High Frequency', value: 'Full Body', desc: 'Rec. for 3-5 sessions' },
+                        { label: 'Upper / Lower', value: 'Upper/Lower', desc: 'Rec. for 4-6 sessions' },
+                        { label: 'Push / Pull / Legs', value: 'PPL', desc: 'Rec. for 6 sessions' },
+                    ].map((opt) => {
+                        const isSelected = splitStrategy === opt.value;
+                        return (
+                            <Pressable
+                                key={opt.value}
+                                onPress={() => setSplitStrategy(opt.value as any)}
+                                style={[
+                                    styles.splitCard,
+                                    isSelected ? styles.splitCardSelected : styles.splitCardUnselected
+                                ]}
+                            >
+                                <View>
+                                    <Text style={[styles.splitLabel, isSelected && styles.splitLabelSelected]}>
+                                        {opt.label}
+                                    </Text>
+                                    <Text style={[styles.splitDesc, isSelected && styles.splitDescSelected]}>
+                                        {opt.desc}
+                                    </Text>
+                                </View>
+                                {isSelected && (
+                                    <View style={styles.checkCircle}>
+                                        <View style={styles.checkInner} />
+                                    </View>
+                                )}
+                            </Pressable>
+                        );
+                    })}
+                </View>
+
                 <Text style={styles.helperText}>
-                    Higher frequency = distribute weekly volume into smaller per-session doses.
+                    Higher frequency (Full Body) allows for more quality sets per muscle group across the week.
                 </Text>
 
                 <Slider
@@ -157,5 +182,42 @@ const styles = StyleSheet.create({
     helperText: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.m, fontStyle: 'italic' },
     divider: { height: 1, backgroundColor: colors.border, marginVertical: spacing.m },
     section: { marginBottom: spacing.m },
+    sectionLabel: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.s },
+    splitOptionsContainer: { gap: spacing.s, marginBottom: spacing.s },
+    splitCard: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: spacing.m,
+        borderRadius: borderRadius.m,
+        borderWidth: 1,
+    },
+    splitCardUnselected: {
+        backgroundColor: colors.surface,
+        borderColor: colors.border,
+    },
+    splitCardSelected: {
+        backgroundColor: colors.surfaceHighlight,
+        borderColor: colors.primary,
+    },
+    splitLabel: { ...typography.bodyBold, color: colors.text },
+    splitLabelSelected: { color: colors.primary },
+    splitDesc: { ...typography.caption, color: colors.textSecondary, marginTop: 2 },
+    splitDescSelected: { color: colors.text },
+    checkCircle: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        borderWidth: 2,
+        borderColor: colors.primary,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    checkInner: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: colors.primary,
+    },
     selectionCount: { ...typography.bodyBold, color: colors.primary, marginBottom: spacing.s, marginTop: spacing.xs },
 });

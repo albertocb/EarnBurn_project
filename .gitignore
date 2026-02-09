@@ -44,3 +44,6 @@ app-example
 
 # Ignore local agent configurations
 .agent/
+
+# local artifacts
+*.bundle

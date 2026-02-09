@@ -1,50 +1,61 @@
-# Welcome to your Expo app 👋
+# EarnBurn Project 🏋️‍♂️
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**EarnBurn** is a React Native mobile application built with Expo, designed for advanced workout programming and tracking. It focuses on periodization and seamless workout execution.
 
-## Get started
+## 📱 About the App
 
-1. Install dependencies
+While built with web-standard technologies (React, TypeScript), this is a **native mobile application** (iOS/Android).
 
-   ```bash
-   npm install
-   ```
+### Key Features
 
-2. Start the app
+#### 1. Workout Planning (Periodization)
+-   **Macrocycles & Mesocycles**: Create long-term training blocks tailored to specific goals (e.g., Hypertrophy, Strength).
+-   **Microcycles (Weekly Plans)**: Detailed weekly views (Day A, Day B, etc.) with specific focuses.
+-   **Exercise Library**: Comprehensive database of exercises categorized by muscle group and pattern.
 
-   ```bash
-   npx expo start
-   ```
+#### 2. Smart Execution
+-   **Draft System**: customize your daily workout before starting.
+-   **Smart Swaps**: specific equipment busy? Swap exercises for valid alternatives directly from the plan.
+-   **Active Session**: "Start" a workout to carry your plan into a live logging session with rest timers and set tracking.
 
-In the output, you'll find options to open the app in a
+#### 3. Offline-First
+-   Local database using SQLite ensures your data is always available, even without an internet connection.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 🛠 Tech Stack
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+-   **Framework**: [React Native](https://reactnative.dev/) + [Expo SDK 54](https://expo.dev/)
+-   **Routing**: [Expo Router](https://docs.expo.dev/router/introduction/) (File-based routing)
+-   **State Management**: [Zustand](https://github.com/pmndrs/zustand)
+-   **Database**: [Expo SQLite](https://docs.expo.dev/versions/latest/sdk/sqlite/) + [Drizzle ORM](https://orm.drizzle.team/)
+-   **Styling**: Custom theme system (StyleSheet)
+-   **Language**: [TypeScript](https://www.typescriptlang.org/)
 
-## Get a fresh project
+## 🚀 Getting Started
 
-When you're ready, run:
+1.  **Install Dependencies**
+    ```bash
+    npm install
+    ```
 
-```bash
-npm run reset-project
-```
+2.  **Start the App**
+    ```bash
+    npx expo start
+    ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+3.  **Run on Device/Simulator**
+    -   Press `i` for iOS Simulator.
+    -   Press `a` for Android Emulator.
+    -   Scan the QR code with the Expo Go app on your physical device.
 
-## Learn more
+## 📂 Project Structure
 
-To learn more about developing your project with Expo, look at the following resources:
+-   `app/`: Application screens and routes (Expo Router).
+-   `src/components/`: Reusable UI components.
+-   `src/store/`: Zustand state stores (User, Program, Workout Draft).
+-   `src/db/`: Database schema and client configuration.
+-   `src/repositories/`: Data access layer.
+-   `src/theme/`: Design tokens (Colors, Typography, Spacing).
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+---
+*Built with Expo & Google Antigravity AI & much ❤️*
 
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.

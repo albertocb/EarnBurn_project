@@ -8,6 +8,7 @@ import { Card } from '../../src/components/common/Card';
 import { exercises as allExercises } from '../../src/data/exercises';
 import { workoutDayStatusRepository } from '../../src/repositories/workoutDayStatusRepository';
 import { useProgramStore } from '../../src/store/programStore';
+import { useTimerStore } from '../../src/store/timerStore';
 import { useWorkoutDraftStore } from '../../src/store/workoutDraftStore';
 import { borderRadius, colors, spacing, typography } from '../../src/theme/theme';
 
@@ -309,6 +310,11 @@ export default function MicrocycleScreen() {
             isDeload: isDeload,
             exercises: draftExercises,
         });
+
+        // Start Timer
+        const { reset, start } = useTimerStore.getState();
+        reset();
+        start();
 
         router.push('/workout');
     };

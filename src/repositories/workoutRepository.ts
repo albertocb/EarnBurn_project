@@ -7,6 +7,7 @@ export interface WorkoutSessionData {
     id: string;
     date: string;
     durationSeconds?: number;
+    durationMs?: number;
     rpe?: number;
     notes?: string;
 }
@@ -28,6 +29,7 @@ export const workoutRepository = {
             id: session.id,
             date: session.date,
             durationSeconds: session.durationSeconds,
+            durationMs: session.durationMs,
             rpe: session.rpe,
             notes: session.notes,
         });

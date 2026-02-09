@@ -116,6 +116,8 @@ export default function ProfileScreen() {
                                 resetProgram();
                                 const { reset: resetUser } = await import('../../src/store/userStore').then(m => m.useUserStore.getState());
                                 resetUser();
+                                const { reset: resetTimer } = await import('../../src/store/timerStore').then(m => m.useTimerStore.getState());
+                                resetTimer();
 
                                 alert('Database and app state cleared.');
 

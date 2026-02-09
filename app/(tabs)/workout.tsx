@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../src/components/common/Button';
 import { workoutDayStatusRepository } from '../../src/repositories/workoutDayStatusRepository';
 import { workoutRepository } from '../../src/repositories/workoutRepository';
+import { useTimerStore } from '../../src/store/timerStore';
 import { useWorkoutDraftStore } from '../../src/store/workoutDraftStore';
 import { borderRadius, colors, spacing, typography } from '../../src/theme/theme';
 
@@ -60,7 +61,6 @@ export default function WorkoutScreen() {
     const router = useRouter();
     const { draft, clearDraft } = useWorkoutDraftStore();
     const [exercises, setExercises] = useState<Exercise[]>(MOCK_WORKOUT);
-    const [timer, setTimer] = useState(0); // Mock timer
 
     useEffect(() => {
         if (draft) {
@@ -138,11 +138,18 @@ export default function WorkoutScreen() {
     const handleFinishWorkout = async () => {
         let savedOk = false;
         try {
+            // Stop Timer & Get Duration
+            const { pause, getElapsedMs } = useTimerStore.getState();
+            pause();
+            const durationMs = getElapsedMs();
+            const durationSeconds = Math.floor(durationMs / 1000);
+
             const sessionId = Date.now().toString();
             await workoutRepository.createSession({
                 id: sessionId,
                 date: new Date().toISOString(),
-                durationSeconds: 0, // Mock timer
+                durationSeconds: durationSeconds,
+                durationMs: durationMs,
             });
 
             for (const ex of exercises) {
@@ -237,10 +244,6 @@ export default function WorkoutScreen() {
                         {draft ? `Week ${draft.week} • ${draft.title}${draft.isDeload ? ' • DELOAD' : ''}` : 'Mesocycle 1 • Week 2'}
                     </Text>
                 </View>
-                <TouchableOpacity style={styles.timerChip}>
-                    <Ionicons name="time-outline" size={16} color={colors.primary} />
-                    <Text style={styles.timerText}>45:20</Text>
-                </TouchableOpacity>
             </View>
 
             <ScrollView contentContainerStyle={styles.scroll}>

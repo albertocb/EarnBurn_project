@@ -92,6 +92,7 @@ export const workoutSessions = sqliteTable('workout_sessions', {
     plannedSessionId: text('planned_session_id'), // Optional link to plan
     date: text('date').notNull(),
     durationSeconds: integer('duration_seconds'),
+    durationMs: integer('duration_ms'),
     rpe: real('rpe'), // Session RPE
     notes: text('notes'),
 });

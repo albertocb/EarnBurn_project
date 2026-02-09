@@ -59,3 +59,6 @@ While built with web-standard technologies (React, TypeScript), this is a **nati
 ---
 *Built with Expo & Google Antigravity AI & Google Gemini 3 & OpenAI ChatGPT 5.2 & A Human & much ❤️*
 
+## License
+MIT. See LICENSE.
+

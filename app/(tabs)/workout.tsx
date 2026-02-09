@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../src/components/common/Button';
 import { workoutRepository } from '../../src/repositories/workoutRepository';
@@ -53,7 +54,8 @@ const MOCK_WORKOUT: Exercise[] = [
 ];
 
 export default function WorkoutScreen() {
-    const { draft } = useWorkoutDraftStore();
+    const router = useRouter();
+    const { draft, clearDraft } = useWorkoutDraftStore();
     const [exercises, setExercises] = useState<Exercise[]>(MOCK_WORKOUT);
     const [timer, setTimer] = useState(0); // Mock timer
 
@@ -109,10 +111,21 @@ export default function WorkoutScreen() {
                     }
                 }
             }
-            console.log('Workout Saved');
-            // Reset or Navigate
+
+            Alert.alert('Workout Saved', 'Session logged locally.', [
+                {
+                    text: 'OK',
+                    onPress: () => {
+                        clearDraft();
+                        // Optional: Reset to mock or empty state if needed, 
+                        // but navigation away handles it mostly.
+                        router.replace('/');
+                    }
+                }
+            ]);
         } catch (e) {
             console.error('Failed to save workout', e);
+            Alert.alert('Save Failed', 'Could not save workout session. Check logs.');
         }
     };
 

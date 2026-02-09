@@ -274,16 +274,7 @@ export default function MicrocycleScreen() {
                         </View>
                     );
                 })}
-
-                <View style={styles.footerSpace} />
             </ScrollView>
-
-            <View style={styles.footer}>
-                <Button
-                    title="Start Workout"
-                    onPress={() => alert('Workout logging coming soon!')}
-                />
-            </View>
 
             {/* Swap Modal */}
             <Modal
@@ -413,18 +404,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     undoText: { ...typography.caption, color: colors.accent, fontSize: 10, marginTop: 2 },
-
-    footerSpace: { height: 80 },
-    footer: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        padding: spacing.l,
-        backgroundColor: colors.surface, // Or transparent with blur
-        borderTopWidth: 1,
-        borderTopColor: colors.border,
-    },
 
     // Modal
     modalOverlay: {

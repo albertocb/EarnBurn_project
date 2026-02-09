@@ -1,9 +1,8 @@
-import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTimerStore } from '../store/timerStore';
-import { borderRadius, colors, spacing, typography } from '../theme/theme';
+import { colors, typography } from '../theme/theme';
 
 export const TimerBar = () => {
     const insets = useSafeAreaInsets();
@@ -42,78 +41,63 @@ export const TimerBar = () => {
     // Spec says: "Global stopwatch shown... (same spot on every screen)" implies always visible.
     // Let's keep it visible.
 
-    const barColor = isRunning ? colors.primary : '#FF00FF'; // Magenta-ish when paused
-    // Theme doesn't have magenta, using hardcoded for now or maybe 'secondary' if we prefer.
-    // Requirement: "magenta-ish... if available; otherwise define a single constant"
-    const accentColor = isRunning ? colors.primary : '#D946EF'; // Fuchsia-500 style
+    const barColor = isRunning ? colors.primary : '#D946EF'; // Magenta-ish when paused
 
     return (
-        <View style={[styles.container, { bottom: 85 + insets.bottom }]}>
-            {/* 
-               Position: 
-               - Above Tab Bar (approx 50-60px + safe area)
-               - Let's say 85px from bottom to clear tabs
-            */}
+        <View style={[styles.container, { top: insets.top + 8 }]} pointerEvents="box-none">
             <TouchableOpacity
-                style={[styles.pill, { borderColor: accentColor }]}
+                style={[
+                    styles.square,
+                    {
+                        borderColor: barColor,
+                        backgroundColor: isRunning ? colors.surface : '#FAE8FF' // Very light magenta tint when paused
+                    }
+                ]}
                 onPress={toggle}
                 activeOpacity={0.8}
             >
-                <View style={styles.content}>
-                    <Text style={[styles.timeText, { color: accentColor }]}>
-                        {displayTime}
-                    </Text>
-                    <View style={[styles.iconContainer, { backgroundColor: accentColor }]}>
-                        <Ionicons
-                            name={isRunning ? "pause" : "play"}
-                            size={16}
-                            color={colors.background}
-                        />
-                    </View>
-                </View>
+                <Text
+                    style={[styles.timeText, { color: barColor }]}
+                    adjustsFontSizeToFit
+                    numberOfLines={1}
+                >
+                    {displayTime}
+                </Text>
             </TouchableOpacity>
         </View>
     );
+
 };
 
 const styles = StyleSheet.create({
     container: {
         position: 'absolute',
-        left: 0,
-        right: 0,
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 9999, // On top of everything
-        pointerEvents: 'box-none', // Allow clicks pass through outside the pill
+        right: 16,
+        alignItems: 'flex-end',
+        zIndex: 9999,
     },
-    pill: {
-        backgroundColor: colors.surface,
-        flexDirection: 'row',
+    square: {
+        width: 72,
+        height: 72,
+        justifyContent: 'center',
         alignItems: 'center',
-        paddingHorizontal: spacing.m,
-        paddingVertical: spacing.xs,
-        borderRadius: borderRadius.round,
-        borderWidth: 1,
+        padding: 4,
+        borderRadius: 16, // Rounded square
+        borderWidth: 2,
+        // Shadow
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    content: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: spacing.s,
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
+        elevation: 4,
     },
     timeText: {
         ...typography.bodyBold,
-        fontVariant: ['tabular-nums'], // Fixed width numbers to prevent jitter
+        fontSize: 13,
+        textAlign: 'center',
+        fontVariant: ['tabular-nums'],
+        width: '100%',
     },
-    iconContainer: {
-        width: 24,
-        height: 24,
-        borderRadius: 12,
-        alignItems: 'center',
-        justifyContent: 'center',
-    }
 });
+
+

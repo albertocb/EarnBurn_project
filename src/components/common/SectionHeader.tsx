@@ -16,7 +16,9 @@ export const SectionHeader = ({ title, style, variant = 'accentBar', icon }: Sec
                 <View style={styles.divider} />
                 <View style={styles.pill}>
                     <View style={styles.pillContent}>
-                        <Text style={styles.pillIcon}>{icon || '✨'}</Text>
+                        <View style={styles.emojiBox}>
+                            <Text style={styles.pillIcon}>{icon || '✨'}</Text>
+                        </View>
                         <Text style={styles.pillTitle}>{title}</Text>
                     </View>
                 </View>
@@ -74,15 +76,21 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
+    emojiBox: {
+        height: 22,
+        width: 22,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: spacing.s,
+    },
     pillIcon: {
         fontSize: 18,
         lineHeight: 22,
-        marginRight: spacing.s,
         color: colors.text,
         includeFontPadding: false,
         textAlignVertical: 'center',
-        // Fine-tune emoji vertical position on Android
-        transform: [{ translateY: Platform.OS === 'android' ? 1 : 0 }],
+        // Fine-tune emoji vertical position on Android within the box
+        transform: [{ translateY: Platform.OS === 'android' ? -4 : 0 }],
     },
     pillTitle: {
         ...typography.sectionHeader,

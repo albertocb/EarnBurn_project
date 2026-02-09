@@ -1,12 +1,10 @@
 import { db } from './client';
 import {
-    athleteProfile, bodyMetrics,
-    macrocycles, mesocycles, microcycles,
-    plannedExercises,
-    plannedSessions,
-    plannedSetSchemes,
-    setEntries,
-    workoutSessions
+    athleteProfile,
+    bodyMetrics,
+    macrocycles,
+    mesocycles,
+    microcycles,
     plannedExercises,
     plannedSessions,
     plannedSetSchemes,

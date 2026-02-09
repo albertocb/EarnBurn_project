@@ -1,6 +1,6 @@
 import { Stack, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../src/components/common/Button';
 import { Select } from '../../src/components/common/Select';
@@ -21,7 +21,7 @@ export default function CreateMesocycle() {
     const [volumePreset, setVolumePreset] = useState<'Hypertrophy' | 'Strength'>('Hypertrophy');
     const [focus, setFocus] = useState<Focus>('Hypertrophy');
     const [progression, setProgression] = useState('Linear');
-    const [autoDeload, setAutoDeload] = useState(true);
+    // autoDeload removed - mandatory
     const [rir, setRir] = useState(2); // Mock: Target RIR
 
     useEffect(() => {
@@ -40,7 +40,7 @@ export default function CreateMesocycle() {
             sessionsPerWeek,
             volumePreset,
             progressionModel: progression as any,
-            autoDeload,
+            // autoDeload removed
             volumeRamp: true, // simplified
             exercises: selectedExerciseIds,
         };
@@ -129,14 +129,6 @@ export default function CreateMesocycle() {
                     onValueChange={setRir}
                 />
 
-                <View style={styles.row}>
-                    <Text style={styles.label}>Auto Deload Week</Text>
-                    <Switch
-                        value={autoDeload}
-                        onValueChange={setAutoDeload}
-                        trackColor={{ false: colors.surfaceHighlight, true: colors.primary }}
-                    />
-                </View>
 
                 <View style={styles.section}>
                     <Text style={styles.label}>Exercises</Text>

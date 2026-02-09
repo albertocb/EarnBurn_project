@@ -233,7 +233,9 @@ export default function WorkoutScreen() {
             <View style={styles.header}>
                 <View>
                     <Text style={styles.title}>{draft ? draft.dayName : 'Push Hypertrophy'}</Text>
-                    <Text style={styles.subtitle}>{draft ? `Week ${draft.week} • ${draft.title}` : 'Mesocycle 1 • Week 2'}</Text>
+                    <Text style={styles.subtitle}>
+                        {draft ? `Week ${draft.week} • ${draft.title}${draft.isDeload ? ' • DELOAD' : ''}` : 'Mesocycle 1 • Week 2'}
+                    </Text>
                 </View>
                 <TouchableOpacity style={styles.timerChip}>
                     <Ionicons name="time-outline" size={16} color={colors.primary} />

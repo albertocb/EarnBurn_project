@@ -25,7 +25,7 @@ export interface Mesocycle {
     splitStrategy: 'Full Body' | 'Upper/Lower' | 'PPL';
     sessionsPerWeek: number; // 3-7
     volumePreset: 'Hypertrophy' | 'Strength';
-    autoDeload: boolean;
+    // autoDeload removed - always true now
     volumeRamp: boolean; // Simple mock
     exercises?: string[]; // Array of exercise IDs
 }

@@ -115,13 +115,13 @@ export default function PlanScreen() {
                         </View>
 
                         <View style={styles.weeksContainer}>
-                            {Array.from({ length: meso.weeks }).map((_, wIndex) => {
-                                const isDeload = meso.autoDeload && wIndex === meso.weeks - 1;
+                            {Array.from({ length: meso.weeks + 1 }).map((_, wIndex) => {
+                                const isDeload = wIndex === meso.weeks; // Last week (N+1) is Deload
                                 return (
                                     <TouchableOpacity
                                         key={wIndex}
                                         onPress={() => router.push({
-                                            pathname: `/microcycle/${wIndex + 1}`,
+                                            pathname: `/microcycle/${wIndex + 1}` as any,
                                             params: {
                                                 type: isDeload ? 'deload' : 'standard',
                                                 title: isDeload ? `W${wIndex + 1} Deload` : `W${wIndex + 1} Standard Microcycle`,

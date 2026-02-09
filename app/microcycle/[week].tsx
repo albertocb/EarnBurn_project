@@ -36,7 +36,8 @@ interface WorkoutDay {
 // --- Dynamic Plan Generator ---
 const generatePlan = (
     mesoId: string | undefined,
-    macrocycles: any[]
+    macrocycles: any[],
+    isDeload: boolean = false
 ): WorkoutDay[] => {
     // 1. Find Mesocycle
     let mesocycle = null;
@@ -54,10 +55,18 @@ const generatePlan = (
     const volumePreset = mesocycle?.volumePreset || 'Hypertrophy';
 
     // Volume Constants
-    const weeklySets = volumePreset === 'Hypertrophy' ? 12 : 6;
-    const setsPerSession = Math.max(2, Math.round(weeklySets / sessions));
+    let weeklySets = volumePreset === 'Hypertrophy' ? 12 : 6;
+    if (isDeload) {
+        // Deload: Cut sets by ~50%
+        weeklySets = Math.max(1, Math.ceil(weeklySets * 0.5));
+    }
+
+    const setsPerSession = Math.max(isDeload ? 1 : 2, Math.round(weeklySets / sessions));
     const repRange = volumePreset === 'Hypertrophy' ? '8-12' : '4-6';
-    const rir = volumePreset === 'Hypertrophy' ? '2 RIR' : '3 RIR';
+
+    // Deload RIR: Easiear (3-5 RIR) vs Normal (2-3 RIR)
+    const rir = isDeload ? '4-5 RIR' : (volumePreset === 'Hypertrophy' ? '2 RIR' : '3 RIR');
+
     const prescription = `${setsPerSession} sets • ${repRange} reps @ ${rir}`;
 
     const days: WorkoutDay[] = [];
@@ -160,7 +169,7 @@ const generatePlan = (
                 id: `d${i}-s4`,
                 primary: isoEx,
                 alternatives: findAlts(isoEx.id, 'Isolation'),
-                prescription: `${Math.max(2, setsPerSession)} sets • 10-15 reps @ ${rir}`
+                prescription: `${Math.max(isDeload ? 1 : 2, setsPerSession)} sets • 10-15 reps @ ${rir}`
             });
         }
 
@@ -177,10 +186,12 @@ const generatePlan = (
 
 
 export default function MicrocycleScreen() {
-    const { week, title, mesocycleId } = useLocalSearchParams();
+    const { week, title, mesocycleId, type } = useLocalSearchParams();
     const router = useRouter();
     const { macrocycles } = useProgramStore();
     const { setDraft } = useWorkoutDraftStore();
+
+    const isDeload = type === 'deload';
 
     // Local state for statuses
     const [dayStatuses, setDayStatuses] = useState<Record<string, any>>({});
@@ -295,6 +306,7 @@ export default function MicrocycleScreen() {
             week: typeof week === 'string' ? week : '1',
             dayId: day.id,
             dayName: day.name,
+            isDeload: isDeload,
             exercises: draftExercises,
         });
 

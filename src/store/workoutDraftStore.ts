@@ -12,6 +12,7 @@ interface DraftWorkout {
     week: string;
     dayId: string;
     dayName: string;
+    isDeload?: boolean;
     exercises: DraftExercise[];
 }
 

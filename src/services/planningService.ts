@@ -36,9 +36,11 @@ export const PlanningService = {
      */
     generateMicrocycles: (meso: Mesocycle) => {
         const micros = [];
-        for (let i = 0; i < meso.weeks; i++) {
-            const isLastWeek = i === meso.weeks - 1;
-            const isDeload = meso.autoDeload && isLastWeek;
+        // Generate N + 1 weeks (Work weeks + 1 Deload)
+        const totalWeeks = meso.weeks + 1;
+
+        for (let i = 0; i < totalWeeks; i++) {
+            const isDeload = i === totalWeeks - 1; // Last week is ALWAYS deload
 
             micros.push({
                 order: i,

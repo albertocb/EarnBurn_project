@@ -76,6 +76,9 @@ export default function WorkoutScreen() {
                 ]
             }));
             setExercises(draftExercises);
+        } else {
+            // Reset to empty when draft is cleared or null
+            setExercises([]);
         }
     }, [draft]);
 

@@ -9,6 +9,7 @@ interface ProgramState {
     createMacrocycle: (name: string) => Promise<void>;
     addMesocycle: (macrocycleId: string, meso: Mesocycle) => Promise<void>;
     deleteMacrocycle: (id: string) => Promise<void>;
+    reset: () => void;
 }
 
 export const useProgramStore = create<ProgramState>((set, get) => ({
@@ -71,4 +72,8 @@ export const useProgramStore = create<ProgramState>((set, get) => ({
         }));
         await programRepository.deleteMacrocycle(id);
     },
+
+    reset: () => {
+        set({ activeMacrocycleId: null, macrocycles: [] });
+    }
 }));

@@ -7,6 +7,12 @@ import {
     plannedSetSchemes,
     setEntries,
     workoutSessions
+    plannedExercises,
+    plannedSessions,
+    plannedSetSchemes,
+    setEntries,
+    workoutDayStatus,
+    workoutSessions
 } from './schema';
 
 export const resetDatabase = async () => {
@@ -15,6 +21,7 @@ export const resetDatabase = async () => {
             // Delete in order of dependencies (child first)
             await tx.delete(setEntries);
             await tx.delete(workoutSessions);
+            await tx.delete(workoutDayStatus); // Added workoutDayStatus to clear list
 
             await tx.delete(plannedSetSchemes);
             await tx.delete(plannedExercises);
@@ -33,3 +40,5 @@ export const resetDatabase = async () => {
         throw e;
     }
 };
+
+

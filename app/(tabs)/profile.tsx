@@ -5,6 +5,7 @@ import { Button } from '../../src/components/common/Button';
 import { Card } from '../../src/components/common/Card';
 import { Input } from '../../src/components/common/Input';
 import { useUserStore } from '../../src/store/userStore';
+import { useWorkoutDraftStore } from '../../src/store/workoutDraftStore';
 import { borderRadius, colors, spacing, typography } from '../../src/theme/theme';
 
 export default function ProfileScreen() {
@@ -73,7 +74,7 @@ export default function ProfileScreen() {
                             <Text style={styles.trendLabel}>Weight Trend</Text>
                             <View style={styles.mockChart}>
                                 {[40, 60, 50, 70, 65, 80].map((h, i) => (
-                                    <View key={i} style={[styles.bar, { height: h + '%', backgroundColor: colors.secondary }]} />
+                                    <View key={i} style={[styles.bar, { height: `${h}%` as any, backgroundColor: colors.secondary }]} />
                                 ))}
                             </View>
                             <Text style={styles.trendValue}>-1.2 kg <Text style={{ color: colors.textDim }}>Last 30d</Text></Text>
@@ -82,7 +83,7 @@ export default function ProfileScreen() {
                             <Text style={styles.trendLabel}>Volume Load</Text>
                             <View style={styles.mockChart}>
                                 {[20, 30, 45, 60, 80, 70].map((h, i) => (
-                                    <View key={i} style={[styles.bar, { height: h + '%', backgroundColor: colors.primary }]} />
+                                    <View key={i} style={[styles.bar, { height: `${h}%` as any, backgroundColor: colors.primary }]} />
                                 ))}
                             </View>
                             <Text style={styles.trendValue}>+5% <Text style={{ color: colors.textDim }}>Last 30d</Text></Text>
@@ -108,9 +109,23 @@ export default function ProfileScreen() {
                             try {
                                 const { resetDatabase } = await import('../../src/db/reset');
                                 await resetDatabase();
-                                alert('Database cleared. Please restart the app.');
+
+                                // Clear stores
+                                useWorkoutDraftStore.getState().clearDraft();
+                                const { reset: resetProgram } = await import('../../src/store/programStore').then(m => m.useProgramStore.getState());
+                                resetProgram();
+                                const { reset: resetUser } = await import('../../src/store/userStore').then(m => m.useUserStore.getState());
+                                resetUser();
+
+                                alert('Database and app state cleared.');
+
+                                // Navigate to Plan tab
+                                const { router } = await import('expo-router');
+                                router.replace('/');
+
                             } catch (e) {
                                 alert('Failed to reset DB');
+                                console.error(e);
                             }
                         }}
                     />

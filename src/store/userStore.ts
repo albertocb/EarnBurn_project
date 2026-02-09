@@ -8,6 +8,7 @@ interface UserState {
     init: () => Promise<void>;
     updateProfile: (updates: Partial<AthleteStats>) => Promise<void>;
     addMetric: (entry: MetricEntry) => Promise<void>;
+    reset: () => void;
 }
 
 const DEFAULT_PROFILE: AthleteStats = {
@@ -50,4 +51,8 @@ export const useUserStore = create<UserState>((set, get) => ({
         set((state) => ({ history: [entry, ...state.history] }));
         await athleteRepository.addMetric(entry);
     },
+
+    reset: () => {
+        set({ profile: DEFAULT_PROFILE, history: [] });
+    }
 }));

@@ -55,7 +55,7 @@ export default function CreateMesocycle() {
             <Stack.Screen options={{ title: 'Add Mesocycle', headerBackTitle: 'Cancel' }} />
             <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 100, paddingTop: spacing.xl }]}>
 
-                <SectionHeader title="Split Strategy" />
+                <SectionHeader title="Split Strategy" variant="pillDivider" />
                 <View style={styles.splitOptionsContainer}>
                     {[
                         { label: 'Full-Body High Frequency', value: 'Full Body', desc: 'Rec. for 3-5 sessions' },
@@ -94,7 +94,7 @@ export default function CreateMesocycle() {
                     Higher frequency (Full Body) allows for more quality sets per muscle group across the week.
                 </Text>
 
-                <SectionHeader title="Sessions per Week" />
+                <SectionHeader title="Sessions per Week" variant="pillDivider" />
                 <Slider
                     label=""
                     value={sessionsPerWeek}
@@ -104,7 +104,7 @@ export default function CreateMesocycle() {
                     onValueChange={setSessionsPerWeek}
                 />
 
-                <SectionHeader title="Weekly Volume Preset" />
+                <SectionHeader title="Weekly Volume Preset" variant="pillDivider" />
                 <Select
                     label=""
                     value={volumePreset}
@@ -117,7 +117,7 @@ export default function CreateMesocycle() {
 
                 <View style={styles.divider} />
 
-                <SectionHeader title="Focus" />
+                <SectionHeader title="Focus" variant="pillDivider" />
                 <Select
                     label=""
                     value={focus}
@@ -129,7 +129,7 @@ export default function CreateMesocycle() {
                     ]}
                 />
 
-                <SectionHeader title="Length" />
+                <SectionHeader title="Length" variant="pillDivider" />
                 <Slider
                     label=""
                     value={weeks}
@@ -139,7 +139,7 @@ export default function CreateMesocycle() {
                     onValueChange={setWeeks}
                 />
 
-                <SectionHeader title="Progression Model" />
+                <SectionHeader title="Progression Model" variant="pillDivider" />
                 <Select
                     label=""
                     value={progression}
@@ -151,7 +151,7 @@ export default function CreateMesocycle() {
                     ]}
                 />
 
-                <SectionHeader title="Target RIR (Reps In Reserve)" />
+                <SectionHeader title="Target RIR (Reps In Reserve)" variant="pillDivider" />
                 <Slider
                     label=""
                     value={rir}
@@ -163,7 +163,7 @@ export default function CreateMesocycle() {
 
 
                 <View style={styles.section}>
-                    <SectionHeader title="Exercises" />
+                    <SectionHeader title="Exercises" variant="pillDivider" />
                     <Text style={styles.selectionCount}>
                         {selectedExerciseIds.length} Selected
                     </Text>

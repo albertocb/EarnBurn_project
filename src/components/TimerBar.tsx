@@ -34,7 +34,8 @@ export const TimerBar = () => {
         };
     }, [isRunning, getElapsedMs]);
 
-    const barColor = isRunning ? colors.primary : '#D946EF'; // Magenta-ish when paused
+    const PAUSED_NEON = '#39FF14';
+    const barColor = isRunning ? colors.primary : PAUSED_NEON;
 
     return (
         <TouchableOpacity
@@ -42,7 +43,8 @@ export const TimerBar = () => {
                 styles.square,
                 {
                     borderColor: barColor,
-                    backgroundColor: isRunning ? colors.surface : '#FAE8FF'
+                    backgroundColor: isRunning ? colors.surface : 'rgba(57, 255, 20, 0.12)', // Neon green with low opacity
+                    borderWidth: isRunning ? 1 : 2, // Thicker border when paused
                 }
             ]}
             onPress={toggle}
@@ -68,8 +70,8 @@ const styles = StyleSheet.create({
         zIndex: 9999,
     },
     square: {
-        width: 72,
-        height: 23,
+        width: 84,
+        height: 26,
         justifyContent: 'center',
         alignItems: 'center',
         padding: 0, // Minimized padding
@@ -84,8 +86,8 @@ const styles = StyleSheet.create({
     },
     timeText: {
         ...typography.bodyBold,
-        fontSize: 14, // Slightly larger
-        lineHeight: 12, // Tight line height, close to font size
+        fontSize: 20, // Slightly larger
+        lineHeight: 16, // Tight line height, close to font size
         textAlign: 'center',
         textAlignVertical: 'center', // Android vertical center
         includeFontPadding: false,   // Android remove extra padding

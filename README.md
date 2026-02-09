@@ -57,5 +57,5 @@ While built with web-standard technologies (React, TypeScript), this is a **nati
 -   `src/theme/`: Design tokens (Colors, Typography, Spacing).
 
 ---
-*Built with Expo & Google Antigravity AI & Google Gemini 3 & OpenAI ChatGPT & A Human & much ❤️*
+*Built with Expo & Google Antigravity AI & Google Gemini 3 & OpenAI ChatGPT 5.2 & A Human & much ❤️*
 

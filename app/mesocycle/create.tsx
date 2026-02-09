@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     helperText: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.m, fontStyle: 'italic' },
     divider: { height: 1, backgroundColor: colors.border, marginVertical: spacing.m },
     section: { marginBottom: spacing.m },
-    sectionLabel: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.s },
+    sectionLabel: { ...typography.sectionHeader, color: colors.textSecondary },
     splitOptionsContainer: { gap: spacing.s, marginBottom: spacing.s },
     splitCard: {
         flexDirection: 'row',

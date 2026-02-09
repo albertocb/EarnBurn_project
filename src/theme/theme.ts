@@ -42,5 +42,6 @@ export const typography = {
   bodyBold: { fontSize: 16, fontWeight: '600' as const, color: colors.text },
   caption: { fontSize: 12, fontWeight: '400' as const, color: colors.textDim },
   button: { fontSize: 16, fontWeight: '700' as const, color: colors.background, textTransform: 'uppercase' as const }, // Primary button text
+  sectionHeader: { fontSize: 18, fontWeight: '600' as const, color: colors.text, marginBottom: spacing.s },
 };
 

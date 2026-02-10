@@ -202,8 +202,13 @@ export default function MicrocycleScreen() {
     useEffect(() => {
         const fetchStatuses = async () => {
             if (typeof week === 'string') {
-                const statuses = await workoutDayStatusRepository.getStatusesForWeek(week);
-                setDayStatuses(statuses);
+                try {
+                    const statuses = await workoutDayStatusRepository.getStatusesForWeek(week);
+                    setDayStatuses(statuses);
+                } catch (e) {
+                    console.error('Failed to load day statuses', e);
+                    setDayStatuses({});
+                }
             }
         };
         fetchStatuses();

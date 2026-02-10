@@ -9,7 +9,7 @@ import { exercises } from '../../src/data/exercises';
 import { useSelectionStore } from '../../src/store/selectionStore';
 import { borderRadius, colors, spacing, typography } from '../../src/theme/theme';
 
-const FILTERS = ['All', 'Upper', 'Lower', 'Push', 'Pull', 'Legs', 'Full Body'];
+const FILTERS = ['All', 'Upper', 'Lower', 'Push', 'Pull', 'Legs', 'Full Body', 'Cardio'];
 
 export default function ExerciseSelection() {
     const router = useRouter();

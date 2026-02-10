@@ -570,5 +570,14 @@ export const exercises: Exercise[] = [
         pattern: 'Cardio',
         primaryMuscles: ['Quadriceps', 'Glutes', 'Calves'],
     },
+    {
+        id: '63',
+        name: 'Row Machine',
+        description: 'Cardio • Erg • Row',
+        group: 'Cardio',
+        equipment: 'Machine',
+        pattern: 'Cardio',
+        primaryMuscles: ['Quadriceps', 'Glutes', 'Upper Back', 'Lats', 'Core'],
+    },
 
 ];

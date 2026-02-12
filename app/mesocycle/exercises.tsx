@@ -18,7 +18,6 @@ export default function ExerciseSelection() {
         selectedExerciseIds,
         selectionOrigin,
         autoKey,
-        hasManualEdits,
         toggleExercise,
         applyRecommendedDefaults,
         clearSelection,
@@ -41,7 +40,7 @@ export default function ExerciseSelection() {
 
     useEffect(() => {
         const nextAutoKey = `${recommendationParams.splitStrategy}|${recommendationParams.focus ?? ''}|${recommendationParams.sessionsPerWeek ?? ''}`;
-        if (selectedExerciseIds.length === 0 && !hasManualEdits) {
+        if (selectedExerciseIds.length === 0) {
             applyRecommendedDefaults(recommendationParams);
             return;
         }
@@ -53,7 +52,6 @@ export default function ExerciseSelection() {
         selectedExerciseIds.length,
         selectionOrigin,
         autoKey,
-        hasManualEdits,
         applyRecommendedDefaults,
         recommendationParams,
     ]);

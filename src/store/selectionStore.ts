@@ -16,6 +16,7 @@ interface SelectionState {
     selectedExerciseIds: string[];
     selectionOrigin: SelectionOrigin;
     autoKey: string | null;
+    hasManualEdits: boolean;
     toggleExercise: (id: string) => void;
     setSelectedExercises: (ids: string[], origin?: SelectionOrigin, autoKey?: string | null) => void;
     markSelectionManual: () => void;
@@ -28,6 +29,7 @@ export const useSelectionStore = create<SelectionState>((set) => ({
     selectedExerciseIds: [],
     selectionOrigin: 'manual',
     autoKey: null,
+    hasManualEdits: false,
     toggleExercise: (id) =>
         set((state) => {
             const isSelected = state.selectedExerciseIds.includes(id);
@@ -37,11 +39,17 @@ export const useSelectionStore = create<SelectionState>((set) => ({
                     : [...state.selectedExerciseIds, id],
                 selectionOrigin: 'manual',
                 autoKey: null,
+                hasManualEdits: true,
             };
         }),
     setSelectedExercises: (ids, origin = 'manual', autoKey = null) =>
-        set({ selectedExerciseIds: ids, selectionOrigin: origin, autoKey: origin === 'auto' ? autoKey : null }),
-    markSelectionManual: () => set({ selectionOrigin: 'manual', autoKey: null }),
+        set({
+            selectedExerciseIds: ids,
+            selectionOrigin: origin,
+            autoKey: origin === 'auto' ? autoKey : null,
+            hasManualEdits: origin === 'manual',
+        }),
+    markSelectionManual: () => set({ selectionOrigin: 'manual', autoKey: null, hasManualEdits: true }),
     applyRecommendedDefaults: (params) => {
         const nextIds = getRecommendedExerciseIds(params);
         const key = getRecommendationAutoKey(params);
@@ -49,8 +57,16 @@ export const useSelectionStore = create<SelectionState>((set) => ({
             selectedExerciseIds: nextIds,
             selectionOrigin: 'auto',
             autoKey: key,
+            hasManualEdits: false,
         });
     },
-    clearSelection: () => set({ selectedExerciseIds: [], selectionOrigin: 'manual', autoKey: null }),
-    resetSelectionState: () => set({ selectedExerciseIds: [], selectionOrigin: 'manual', autoKey: null }),
+    clearSelection: () =>
+        set({
+            selectedExerciseIds: [],
+            selectionOrigin: 'manual',
+            autoKey: null,
+            hasManualEdits: true,
+        }),
+    resetSelectionState: () =>
+        set({ selectedExerciseIds: [], selectionOrigin: 'manual', autoKey: null, hasManualEdits: false }),
 }));

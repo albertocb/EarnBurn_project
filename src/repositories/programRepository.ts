@@ -33,7 +33,9 @@ export const programRepository = {
                     weeks: meso.weeks,
                     focus: meso.focus as any,
                     progressionModel: meso.progressionModel as any,
-                    autoDeload: meso.autoDeload ?? false,
+                    splitStrategy: 'Full Body',
+                    sessionsPerWeek: 4,
+                    volumePreset: 'Hypertrophy',
                     volumeRamp: meso.volumeRamp ?? false,
                 })),
                 // Store doesn't have isActive in Macrocycle type explicitly?
@@ -63,7 +65,7 @@ export const programRepository = {
                     focus: meso.focus,
                     weeks: meso.weeks,
                     progressionModel: meso.progressionModel,
-                    autoDeload: meso.autoDeload,
+                    autoDeload: true,
                     volumeRamp: meso.volumeRamp,
                 });
 
@@ -77,7 +79,7 @@ export const programRepository = {
                         id: `${meso.id}-week-${w}`, // Simple ID generation
                         mesocycleId: meso.id,
                         order: w,
-                        isDeload: meso.autoDeload && w === meso.weeks - 1,
+                        isDeload: w === meso.weeks - 1,
                     });
                 }
             }
@@ -98,7 +100,7 @@ export const programRepository = {
                 focus: meso.focus,
                 weeks: meso.weeks,
                 progressionModel: meso.progressionModel,
-                autoDeload: meso.autoDeload,
+                autoDeload: true,
                 volumeRamp: meso.volumeRamp
             });
 
@@ -107,7 +109,7 @@ export const programRepository = {
                     id: `${meso.id}-week-${w}`,
                     mesocycleId: meso.id,
                     order: w,
-                    isDeload: meso.autoDeload && w === meso.weeks - 1
+                    isDeload: w === meso.weeks - 1
                 });
             }
         });

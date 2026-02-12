@@ -10,7 +10,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "rm -rf .tmp-test && tsc --module commonjs --target es2020 --outDir .tmp-test src/services/analyticsService.ts src/services/planningService.ts src/store/types.ts && node --test tests/**/*.test.js"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

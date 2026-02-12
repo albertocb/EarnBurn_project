@@ -3,17 +3,32 @@ import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { useTimerStore } from '../store/timerStore';
 import { colors, typography } from '../theme/theme';
 
+import { WARMUP_MS } from '../constants/timer';
+
 export const TimerBar = () => {
     const { isRunning, toggle, getElapsedMs } = useTimerStore();
     const [displayTime, setDisplayTime] = useState('00:00:00');
+    // Using simple state to trigger re-renders for elapsed time logic if needed, 
+    // though getElapsedMs is imperative. We can rely on the re-render from isRunning 
+    // or the interval to update styles if elapsed time crosses the threshold.
+    // However, the interval below only updates `displayTime`. 
+    // We should also track the current elapsed time in state or ref to update the UI styles 
+    // when crossing the 10-minute mark.
+    const [elapsedMs, setElapsedMs] = useState(0);
 
-    // Update the display every 500ms when running, or once when paused
     useEffect(() => {
         let interval: NodeJS.Timeout;
 
         const updateTime = () => {
             const ms = getElapsedMs();
-            const totalSeconds = Math.floor(ms / 1000);
+            setElapsedMs(ms);
+
+            // Logic for display:
+            // If in warm-up (ms < WARMUP_MS), display ms.
+            // If warm-up finished (ms >= WARMUP_MS), display (ms - WARMUP_MS).
+            const displayMs = (ms < WARMUP_MS) ? ms : Math.max(0, ms - WARMUP_MS);
+
+            const totalSeconds = Math.floor(displayMs / 1000);
             const hours = Math.floor(totalSeconds / 3600);
             const minutes = Math.floor((totalSeconds % 3600) / 60);
             const seconds = totalSeconds % 60;
@@ -35,23 +50,59 @@ export const TimerBar = () => {
     }, [isRunning, getElapsedMs]);
 
     const PAUSED_NEON = '#39FF14';
-    const barColor = isRunning ? colors.primary : PAUSED_NEON;
+    const WARMUP_RUNNING = colors.warning ?? '#FFB000'; // Warm orange/amber
+    const NORMAL_RUNNING = colors.primary;
+
+    const hasStarted = isRunning || elapsedMs > 0;
+    const isWarmup = hasStarted && elapsedMs < WARMUP_MS;
+    const isIdle = !isRunning && elapsedMs === 0;
+
+    let accent: string;
+    let backgroundColor: string;
+
+    if (isIdle) {
+        accent = colors.border; // Neutral
+        backgroundColor = colors.surface; // Default surface
+    } else if (isWarmup) {
+        // Warm-up phase
+        if (isRunning) {
+            accent = WARMUP_RUNNING;
+            backgroundColor = 'rgba(255, 176, 0, 0.12)'; // Warm tint
+        } else {
+            accent = PAUSED_NEON;
+            backgroundColor = 'rgba(57, 255, 20, 0.12)'; // Neon tint
+        }
+    } else {
+        // Normal phase (after 10 mins)
+        if (isRunning) {
+            accent = NORMAL_RUNNING;
+            backgroundColor = colors.surface; // Back to normal surface
+        } else {
+            accent = PAUSED_NEON;
+            backgroundColor = 'rgba(57, 255, 20, 0.12)'; // Neon tint
+        }
+    }
 
     return (
         <TouchableOpacity
             style={[
                 styles.square,
                 {
-                    borderColor: barColor,
-                    backgroundColor: isRunning ? colors.surface : 'rgba(57, 255, 20, 0.12)', // Neon green with low opacity
-                    borderWidth: isRunning ? 1 : 2, // Thicker border when paused
+                    borderColor: accent,
+                    backgroundColor: backgroundColor,
+                    borderWidth: isIdle ? 1 : (isRunning ? 1 : 2), // Keep logic consistent: thicker border when paused (unless idle)
                 }
             ]}
             onPress={toggle}
             activeOpacity={0.8}
         >
+            {isWarmup && (
+                <Text style={[styles.warmupSymbol, { color: accent }]}>
+                    🔥
+                </Text>
+            )}
             <Text
-                style={[styles.timeText, { color: barColor }]}
+                style={[styles.timeText, { color: accent }]}
                 adjustsFontSizeToFit
                 numberOfLines={1}
             >
@@ -93,6 +144,14 @@ const styles = StyleSheet.create({
         includeFontPadding: false,   // Android remove extra padding
         fontVariant: ['tabular-nums'],
         width: '100%',
+    },
+    warmupSymbol: {
+        position: 'absolute',
+        top: 2,
+        right: -19,
+        fontSize: 14,
+        fontWeight: 'bold',
+        opacity: 0.9,
     },
 });
 

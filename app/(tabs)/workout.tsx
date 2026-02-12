@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { AppScreen } from '../../src/components/AppScreen';
 import { Button } from '../../src/components/common/Button';
+import { WARMUP_MS } from '../../src/constants/timer';
 import { workoutDayStatusRepository } from '../../src/repositories/workoutDayStatusRepository';
 import { workoutRepository } from '../../src/repositories/workoutRepository';
 import { useTimerStore } from '../../src/store/timerStore';
@@ -141,7 +142,10 @@ export default function WorkoutScreen() {
             // Stop Timer & Get Duration
             const { pause, getElapsedMs } = useTimerStore.getState();
             pause();
-            const durationMs = getElapsedMs();
+
+            // Exclude warm-up time from the saved duration
+            const totalElapsedMs = getElapsedMs();
+            const durationMs = Math.max(0, totalElapsedMs - WARMUP_MS);
             const durationSeconds = Math.floor(durationMs / 1000);
 
             const sessionId = Date.now().toString();

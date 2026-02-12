@@ -43,12 +43,12 @@ const styles = StyleSheet.create({
     },
     input: {
         flex: 1,
-        color: colors.text,
         ...typography.bodyBold,
         height: '100%',
     },
     suffix: {
-        ...typography.body,
+        fontSize: typography.body.fontSize,
+        fontWeight: typography.body.fontWeight,
         color: colors.textDim,
         marginLeft: spacing.s,
     },

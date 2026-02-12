@@ -12,6 +12,7 @@ export const athleteRepository = {
         // DB has id, Store doesn't explicitly track ID for singleton
         const p = result[0];
         return {
+            name: p.name,
             age: p.age,
             height: p.height,
             weight: p.weight,
@@ -26,6 +27,7 @@ export const athleteRepository = {
 
         if (existing.length === 0) {
             await db.insert(athleteProfile).values({
+                name: stats.name,
                 age: stats.age,
                 height: stats.height,
                 weight: stats.weight,
@@ -34,6 +36,7 @@ export const athleteRepository = {
             });
         } else {
             await db.update(athleteProfile).set({
+                name: stats.name,
                 age: stats.age,
                 height: stats.height,
                 weight: stats.weight,

@@ -47,6 +47,14 @@ While built with web-standard technologies (React, TypeScript), this is a **nati
     -   Press `a` for Android Emulator.
     -   Scan the QR code with the Expo Go app on your physical device.
 
+## 🤝 Contributor Onboarding
+
+If you are new to the project, follow the first-week contributor plan:
+
+- [`docs/FIRST_WEEK_CONTRIBUTOR_PLAN.md`](docs/FIRST_WEEK_CONTRIBUTOR_PLAN.md)
+
+This guide provides a day-by-day learning path, low-risk starter tickets, and a definition of done for your first week.
+
 ## 📂 Project Structure
 
 -   `app/`: Application screens and routes (Expo Router).

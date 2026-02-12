@@ -1,5 +1,5 @@
-import { Stack, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useMemo, useState } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { AppScreen } from '../../src/components/AppScreen';
 import { Button } from '../../src/components/common/Button';
@@ -13,9 +13,50 @@ const FILTERS = ['All', 'Upper', 'Lower', 'Push', 'Pull', 'Legs', 'Full Body', '
 
 export default function ExerciseSelection() {
     const router = useRouter();
-    const { selectedExerciseIds, toggleExercise, clearSelection } = useSelectionStore();
+    const params = useLocalSearchParams<{ splitStrategy?: string; focus?: string; sessionsPerWeek?: string }>();
+    const {
+        selectedExerciseIds,
+        selectionOrigin,
+        autoKey,
+        hasManualEdits,
+        toggleExercise,
+        applyRecommendedDefaults,
+        clearSelection,
+        markSelectionManual,
+    } = useSelectionStore();
     const [search, setSearch] = useState('');
     const [activeFilter, setActiveFilter] = useState('All');
+
+    const recommendationParams = useMemo(() => {
+        const splitStrategy = Array.isArray(params.splitStrategy) ? params.splitStrategy[0] : params.splitStrategy;
+        const focus = Array.isArray(params.focus) ? params.focus[0] : params.focus;
+        const sessionsPerWeekParam = Array.isArray(params.sessionsPerWeek) ? params.sessionsPerWeek[0] : params.sessionsPerWeek;
+
+        return {
+            splitStrategy: splitStrategy ?? 'Full Body',
+            focus,
+            sessionsPerWeek: sessionsPerWeekParam ? Number(sessionsPerWeekParam) : undefined,
+        };
+    }, [params.focus, params.sessionsPerWeek, params.splitStrategy]);
+
+    useEffect(() => {
+        const nextAutoKey = `${recommendationParams.splitStrategy}|${recommendationParams.focus ?? ''}|${recommendationParams.sessionsPerWeek ?? ''}`;
+        if (selectedExerciseIds.length === 0 && !hasManualEdits) {
+            applyRecommendedDefaults(recommendationParams);
+            return;
+        }
+
+        if (selectionOrigin === 'auto' && autoKey !== nextAutoKey) {
+            applyRecommendedDefaults(recommendationParams);
+        }
+    }, [
+        selectedExerciseIds.length,
+        selectionOrigin,
+        autoKey,
+        hasManualEdits,
+        applyRecommendedDefaults,
+        recommendationParams,
+    ]);
 
     const filteredExercises = exercises.filter((ex) => {
         const matchesSearch = ex.name.toLowerCase().includes(search.toLowerCase());
@@ -80,7 +121,7 @@ export default function ExerciseSelection() {
                 renderItem={({ item }) => {
                     const isSelected = selectedExerciseIds.includes(item.id);
                     return (
-                        <Pressable onPress={() => toggleExercise(item.id)}>
+                        <Pressable onPress={() => { markSelectionManual(); toggleExercise(item.id); }}>
                             <Card style={[styles.card, isSelected ? styles.cardSelected : null]}>
                                 <View style={styles.cardHeader}>
                                     <Text style={styles.exerciseName}>{item.name}</Text>
@@ -101,9 +142,14 @@ export default function ExerciseSelection() {
             <View style={styles.footer}>
                 <View style={styles.footerInfo}>
                     <Text style={styles.footerText}>Selected: {selectedExerciseIds.length}</Text>
-                    <Pressable onPress={clearSelection}>
-                        <Text style={styles.clearText}>Clear</Text>
-                    </Pressable>
+                    <View style={styles.footerActions}>
+                        <Pressable onPress={() => applyRecommendedDefaults(recommendationParams)}>
+                            <Text style={styles.resetText}>Reset to recommended</Text>
+                        </Pressable>
+                        <Pressable onPress={() => { markSelectionManual(); clearSelection(); }}>
+                            <Text style={styles.clearText}>Clear</Text>
+                        </Pressable>
+                    </View>
                 </View>
                 <Button title="Save Selection" onPress={handleSave} />
             </View>
@@ -191,8 +237,18 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: spacing.m
     },
+    footerActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.m,
+    },
     footerText: {
         ...typography.bodyBold
+    },
+    resetText: {
+        ...typography.caption,
+        color: colors.primary,
+        fontWeight: '600',
     },
     clearText: {
         ...typography.body,

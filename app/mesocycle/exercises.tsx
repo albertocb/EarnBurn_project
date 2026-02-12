@@ -120,7 +120,7 @@ export default function ExerciseSelection() {
                 renderItem={({ item }) => {
                     const isSelected = selectedExerciseIds.includes(item.id);
                     return (
-                        <Pressable onPress={() => toggleExercise(item.id)}>
+                        <Pressable onPress={() => { markSelectionManual(); toggleExercise(item.id); }}>
                             <Card style={[styles.card, isSelected ? styles.cardSelected : null]}>
                                 <View style={styles.cardHeader}>
                                     <Text style={styles.exerciseName}>{item.name}</Text>

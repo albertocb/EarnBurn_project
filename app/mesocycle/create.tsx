@@ -1,5 +1,5 @@
 import { Stack, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { AppScreen } from '../../src/components/AppScreen';
 import { Button } from '../../src/components/common/Button';
@@ -14,7 +14,13 @@ import { borderRadius, colors, spacing, typography } from '../../src/theme/theme
 export default function CreateMesocycle() {
     const router = useRouter();
     const { activeMacrocycleId, addMesocycle } = useProgramStore();
-    const { selectedExerciseIds, clearSelection } = useSelectionStore();
+    const {
+        selectedExerciseIds,
+        selectionOrigin,
+        autoKey,
+        applyRecommendedDefaults,
+        resetSelectionState,
+    } = useSelectionStore();
 
     const [weeks, setWeeks] = useState(4);
     const [splitStrategy, setSplitStrategy] = useState<'Full Body' | 'Upper/Lower' | 'PPL'>('Full Body');
@@ -25,9 +31,36 @@ export default function CreateMesocycle() {
     // autoDeload removed - mandatory
     const [rir, setRir] = useState(2); // Mock: Target RIR
 
+    const recommendationParams = useMemo(() => ({
+        splitStrategy,
+        focus,
+        sessionsPerWeek,
+    }), [splitStrategy, focus, sessionsPerWeek]);
+
     useEffect(() => {
-        clearSelection();
-    }, []);
+        resetSelectionState();
+    }, [resetSelectionState]);
+
+    useEffect(() => {
+        const nextAutoKey = `${splitStrategy}|${focus}|${sessionsPerWeek}`;
+        if (selectedExerciseIds.length === 0) {
+            applyRecommendedDefaults(recommendationParams);
+            return;
+        }
+
+        if (selectionOrigin === 'auto' && autoKey !== nextAutoKey) {
+            applyRecommendedDefaults(recommendationParams);
+        }
+    }, [
+        selectedExerciseIds.length,
+        selectionOrigin,
+        autoKey,
+        applyRecommendedDefaults,
+        recommendationParams,
+        splitStrategy,
+        focus,
+        sessionsPerWeek,
+    ]);
 
     const handleSave = () => {
         if (!activeMacrocycleId) return;
@@ -168,7 +201,16 @@ export default function CreateMesocycle() {
                 </Text>
                 <Button
                     title="Select Exercises"
-                    onPress={() => router.push('/mesocycle/exercises')}
+                    onPress={() =>
+                        router.push({
+                            pathname: '/mesocycle/exercises',
+                            params: {
+                                splitStrategy,
+                                focus,
+                                sessionsPerWeek: String(sessionsPerWeek),
+                            },
+                        })
+                    }
                     variant="secondary"
                 />
             </View>

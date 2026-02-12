@@ -18,10 +18,10 @@ export default function ExerciseSelection() {
         selectedExerciseIds,
         selectionOrigin,
         autoKey,
+        hasManualEdits,
         toggleExercise,
         applyRecommendedDefaults,
         clearSelection,
-        markSelectionManual,
     } = useSelectionStore();
     const [search, setSearch] = useState('');
     const [activeFilter, setActiveFilter] = useState('All');
@@ -40,7 +40,7 @@ export default function ExerciseSelection() {
 
     useEffect(() => {
         const nextAutoKey = `${recommendationParams.splitStrategy}|${recommendationParams.focus ?? ''}|${recommendationParams.sessionsPerWeek ?? ''}`;
-        if (selectedExerciseIds.length === 0) {
+        if (selectedExerciseIds.length === 0 && !hasManualEdits) {
             applyRecommendedDefaults(recommendationParams);
             return;
         }
@@ -52,6 +52,7 @@ export default function ExerciseSelection() {
         selectedExerciseIds.length,
         selectionOrigin,
         autoKey,
+        hasManualEdits,
         applyRecommendedDefaults,
         recommendationParams,
     ]);
@@ -144,7 +145,7 @@ export default function ExerciseSelection() {
                         <Pressable onPress={() => applyRecommendedDefaults(recommendationParams)}>
                             <Text style={styles.resetText}>Reset to recommended</Text>
                         </Pressable>
-                        <Pressable onPress={() => { markSelectionManual(); clearSelection(); }}>
+                        <Pressable onPress={clearSelection}>
                             <Text style={styles.clearText}>Clear</Text>
                         </Pressable>
                     </View>

@@ -18,6 +18,7 @@ export default function CreateMesocycle() {
         selectedExerciseIds,
         selectionOrigin,
         autoKey,
+        hasManualEdits,
         applyRecommendedDefaults,
         resetSelectionState,
     } = useSelectionStore();
@@ -43,7 +44,7 @@ export default function CreateMesocycle() {
 
     useEffect(() => {
         const nextAutoKey = `${splitStrategy}|${focus}|${sessionsPerWeek}`;
-        if (selectedExerciseIds.length === 0) {
+        if (selectedExerciseIds.length === 0 && !hasManualEdits) {
             applyRecommendedDefaults(recommendationParams);
             return;
         }
@@ -55,6 +56,7 @@ export default function CreateMesocycle() {
         selectedExerciseIds.length,
         selectionOrigin,
         autoKey,
+        hasManualEdits,
         applyRecommendedDefaults,
         recommendationParams,
         splitStrategy,

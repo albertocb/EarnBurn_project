@@ -1,3 +1,5 @@
+import { ImageSourcePropType } from 'react-native';
+
 export interface Exercise {
     id: string;
     name: string;
@@ -6,6 +8,8 @@ export interface Exercise {
     equipment: 'Barbell' | 'Dumbbell' | 'Machine' | 'Bodyweight' | 'Cable';
     pattern: 'Push' | 'Pull' | 'Squat' | 'Hinge' | 'Lunge' | 'Carry' | 'Isolation' | 'Cardio';
     primaryMuscles: string[];
+    /** Optional exercise illustration image */
+    image?: ImageSourcePropType;
 }
 
 export const exercises: Exercise[] = [
@@ -17,6 +21,7 @@ export const exercises: Exercise[] = [
         equipment: 'Barbell',
         pattern: 'Squat',
         primaryMuscles: ['Quadriceps', 'Glutes'],
+        image: require('../../assets/images/exercises/squat.png'),
     },
     {
         id: '2',
@@ -35,6 +40,7 @@ export const exercises: Exercise[] = [
         equipment: 'Barbell',
         pattern: 'Hinge',
         primaryMuscles: ['Hamstrings', 'Glutes', 'Lower Back'],
+        image: require('../../assets/images/exercises/deadlift.png'),
     },
     {
         id: '4',
@@ -44,6 +50,7 @@ export const exercises: Exercise[] = [
         equipment: 'Barbell',
         pattern: 'Push',
         primaryMuscles: ['Shoulders', 'Triceps'],
+        image: require('../../assets/images/exercises/overhead_press.png'),
     },
     {
         id: '5',
@@ -53,6 +60,7 @@ export const exercises: Exercise[] = [
         equipment: 'Bodyweight',
         pattern: 'Pull',
         primaryMuscles: ['Lats', 'Biceps'],
+        image: require('../../assets/images/exercises/pullup.png'),
     },
     {
         id: '6',

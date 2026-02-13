@@ -5,6 +5,7 @@ import { AppScreen } from '../../src/components/AppScreen';
 import { Button } from '../../src/components/common/Button';
 import { Card } from '../../src/components/common/Card';
 import { Input } from '../../src/components/common/Input';
+import { ExerciseIllustration } from '../../src/components/ExerciseIllustration';
 import { exercises } from '../../src/data/exercises';
 import { useSelectionStore } from '../../src/store/selectionStore';
 import { borderRadius, colors, spacing, typography } from '../../src/theme/theme';
@@ -123,15 +124,25 @@ export default function ExerciseSelection() {
                     return (
                         <Pressable onPress={() => { markSelectionManual(); toggleExercise(item.id); }}>
                             <Card style={[styles.card, isSelected ? styles.cardSelected : null]}>
-                                <View style={styles.cardHeader}>
-                                    <Text style={styles.exerciseName}>{item.name}</Text>
-                                    {isSelected && <View style={styles.checkBadge} />}
-                                </View>
-                                <Text style={styles.description}>{item.description}</Text>
-                                <View style={styles.tags}>
-                                    <Text style={styles.tag}>{item.group}</Text>
-                                    <Text style={styles.tagSeparator}>•</Text>
-                                    <Text style={styles.tag}>{item.equipment}</Text>
+                                <View style={styles.cardRow}>
+                                    <ExerciseIllustration
+                                        image={item.image}
+                                        group={item.group}
+                                        pattern={item.pattern}
+                                        size={48}
+                                    />
+                                    <View style={styles.cardContent}>
+                                        <View style={styles.cardHeader}>
+                                            <Text style={styles.exerciseName}>{item.name}</Text>
+                                            {isSelected && <View style={styles.checkBadge} />}
+                                        </View>
+                                        <Text style={styles.description}>{item.description}</Text>
+                                        <View style={styles.tags}>
+                                            <Text style={styles.tag}>{item.group}</Text>
+                                            <Text style={styles.tagSeparator}>•</Text>
+                                            <Text style={styles.tag}>{item.equipment}</Text>
+                                        </View>
+                                    </View>
                                 </View>
                             </Card>
                         </Pressable>
@@ -196,6 +207,14 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: spacing.xs,
+    },
+    cardRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.m,
+    },
+    cardContent: {
+        flex: 1,
     },
     exerciseName: {
         ...typography.bodyBold,

@@ -41,6 +41,7 @@ app-example
 # generated native folders
 /ios
 /android
+__mocks__/
 
 # Ignore local agent configurations
 .agent/
@@ -50,3 +51,4 @@ app-example
 
 # tests 
 .tmp-test/
+__tests__/

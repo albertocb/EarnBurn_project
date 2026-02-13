@@ -1,10 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ImageSourcePropType, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { AppScreen } from '../../src/components/AppScreen';
 import { Button } from '../../src/components/common/Button';
 import { Card } from '../../src/components/common/Card';
+import { ExerciseIllustration } from '../../src/components/ExerciseIllustration';
 import { exercises as allExercises } from '../../src/data/exercises';
 import { workoutDayStatusRepository } from '../../src/repositories/workoutDayStatusRepository';
 import { useProgramStore } from '../../src/store/programStore';
@@ -17,6 +18,9 @@ interface Exercise {
     id: string;
     name: string;
     description: string;
+    image?: ImageSourcePropType;
+    group?: string;
+    pattern?: string;
 }
 
 interface ExerciseSlot {
@@ -415,6 +419,12 @@ export default function MicrocycleScreen() {
                                     return (
                                         <Card key={slot.id} style={styles.exerciseCard}>
                                             <View style={styles.exerciseRow}>
+                                                <ExerciseIllustration
+                                                    image={activeEx.image}
+                                                    group={activeEx.group || 'Upper'}
+                                                    pattern={activeEx.pattern}
+                                                    size={56}
+                                                />
                                                 <View style={styles.exerciseInfo}>
                                                     <Text style={styles.exerciseName}>{activeEx.name}</Text>
                                                     <Text style={styles.exerciseDesc}>{activeEx.description}</Text>
@@ -616,9 +626,10 @@ const styles = StyleSheet.create({
     exerciseRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'flex-start',
+        alignItems: 'center',
+        gap: spacing.m,
     },
-    exerciseInfo: { flex: 1, marginRight: spacing.s },
+    exerciseInfo: { flex: 1 },
     exerciseName: { ...typography.bodyBold, color: colors.text, fontSize: 16 },
     exerciseDesc: { ...typography.caption, color: colors.textSecondary, marginBottom: spacing.xs, fontSize: 12 },
 

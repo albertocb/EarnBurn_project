@@ -59,6 +59,14 @@ export default function RootLayout() {
                     }}
                 >
                     <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                    <Stack.Screen
+                        name="workout/warmup"
+                        options={{
+                            title: 'Warm Up',
+                            headerShown: false,
+                            gestureEnabled: false,
+                        }}
+                    />
                 </Stack>
             </View>
         </SafeAreaProvider>

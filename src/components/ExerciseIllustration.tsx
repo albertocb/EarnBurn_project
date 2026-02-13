@@ -1,6 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Image, ImageSourcePropType, StyleSheet, View } from 'react-native';
+import { colors } from '../theme/theme';
+
+/** Uniform tint color applied to all exercise image assets */
+export const EXERCISE_ICON_TINT = colors.textSecondary;
 
 /** Icon/color mapping per muscle group + pattern */
 const GROUP_ICON_MAP: Record<string, { icon: keyof typeof Ionicons.glyphMap; bg: string; color: string }> = {
@@ -33,6 +37,8 @@ interface ExerciseIllustrationProps {
     pattern?: string;
     /** Thumbnail size (default 56) */
     size?: number;
+    /** Uniform tint color for image assets (default: colors.textSecondary) */
+    tintColor?: string;
 }
 
 export const ExerciseIllustration: React.FC<ExerciseIllustrationProps> = ({
@@ -40,6 +46,7 @@ export const ExerciseIllustration: React.FC<ExerciseIllustrationProps> = ({
     group,
     pattern = 'Isolation',
     size = 56,
+    tintColor = EXERCISE_ICON_TINT,
 }) => {
     const containerStyle = {
         width: size,
@@ -52,7 +59,15 @@ export const ExerciseIllustration: React.FC<ExerciseIllustrationProps> = ({
             <View style={[styles.container, containerStyle]} testID="exercise-illustration">
                 <Image
                     source={image}
-                    style={[styles.image, { width: size, height: size, borderRadius: size * 0.22 }]}
+                    style={[
+                        styles.image,
+                        {
+                            width: size,
+                            height: size,
+                            borderRadius: size * 0.22,
+                            tintColor,
+                        },
+                    ]}
                     resizeMode="cover"
                     testID="exercise-image"
                 />

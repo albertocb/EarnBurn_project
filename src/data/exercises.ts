@@ -31,6 +31,7 @@ export const exercises: Exercise[] = [
         equipment: 'Barbell',
         pattern: 'Push',
         primaryMuscles: ['Chest', 'Triceps', 'Front Delts'],
+        image: require('../../assets/images/exercises/bench_press.png'),
     },
     {
         id: '3',

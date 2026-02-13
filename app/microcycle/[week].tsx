@@ -325,7 +325,7 @@ export default function MicrocycleScreen() {
         reset();
         start();
 
-        router.push('/workout');
+        router.push('/workout/warmup');
     };
 
     const handleStartPress = (day: WorkoutDay, status: any) => {
@@ -423,7 +423,7 @@ export default function MicrocycleScreen() {
                                                     image={activeEx.image}
                                                     group={activeEx.group || 'Upper'}
                                                     pattern={activeEx.pattern}
-                                                    size={56}
+                                                    size={60}
                                                 />
                                                 <View style={styles.exerciseInfo}>
                                                     <Text style={styles.exerciseName}>{activeEx.name}</Text>

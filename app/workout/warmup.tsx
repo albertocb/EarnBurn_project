@@ -1,6 +1,7 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { BackHandler, Platform, StyleSheet, Text, View } from 'react-native';
+import { BackHandler, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../src/components/common/Button';
 import { WARMUP_MS } from '../../src/constants/timer';
 import { useTimerStore } from '../../src/store/timerStore';
@@ -13,12 +14,13 @@ const RING_STROKE = 10;
 export default function WarmupScreen() {
     const router = useRouter();
     const { draft } = useWorkoutDraftStore();
-    const { getElapsedMs, isRunning } = useTimerStore();
+    const { getElapsedMs, isRunning, toggle } = useTimerStore();
 
     const [remainingMs, setRemainingMs] = useState(WARMUP_MS);
     const [progress, setProgress] = useState(0); // 0 → 1
 
     const isComplete = remainingMs <= 0;
+    const isPaused = !isRunning && !isComplete;
 
     // ── Tick loop ──────────────────────────────────────────────
     useEffect(() => {
@@ -39,7 +41,7 @@ export default function WarmupScreen() {
     useEffect(() => {
         if (Platform.OS !== 'android') return;
 
-        const handler = () => true; // returning true prevents default back
+        const handler = () => true;
         const sub = BackHandler.addEventListener('hardwareBackPress', handler);
         return () => sub.remove();
     }, []);
@@ -51,18 +53,29 @@ export default function WarmupScreen() {
     const pad = (n: number) => n.toString().padStart(2, '0');
     const timeDisplay = `${pad(minutes)}:${pad(seconds)}`;
 
+    // ── Tap to toggle timer ────────────────────────────────────
+    const handleScreenTap = () => {
+        if (isComplete) return; // don't toggle once done
+        toggle();
+    };
+
     // ── Navigate to workout ────────────────────────────────────
     const handleStart = () => {
         if (!isComplete) return;
         router.replace('/(tabs)/workout');
     };
 
-    // ── Progress ring (pure RN — two half-circle clips) ────────
+    // ── Progress ring ──────────────────────────────────────────
     const halfSize = RING_SIZE / 2;
     const rotateDeg = progress * 360;
+    const ringColor = isComplete ? colors.primary : (isPaused ? colors.textDim : colors.warning);
 
     return (
-        <View style={styles.container} testID="warmup-screen">
+        <Pressable
+            style={styles.container}
+            onPress={handleScreenTap}
+            testID="warmup-screen"
+        >
             {/* Header context */}
             <View style={styles.header}>
                 <Text style={styles.label}>WARM UP</Text>
@@ -73,7 +86,7 @@ export default function WarmupScreen() {
                 )}
             </View>
 
-            {/* Progress Ring */}
+            {/* Progress Ring + Timer area */}
             <View style={styles.ringContainer}>
                 {/* Track (background ring) */}
                 <View
@@ -99,7 +112,7 @@ export default function WarmupScreen() {
                                 height: RING_SIZE,
                                 borderRadius: halfSize,
                                 borderWidth: RING_STROKE,
-                                borderColor: isComplete ? colors.primary : colors.warning,
+                                borderColor: ringColor,
                                 transform: [
                                     { rotate: rotateDeg > 180 ? `${rotateDeg - 180}deg` : '0deg' },
                                 ],
@@ -119,7 +132,7 @@ export default function WarmupScreen() {
                                 height: RING_SIZE,
                                 borderRadius: halfSize,
                                 borderWidth: RING_STROKE,
-                                borderColor: isComplete ? colors.primary : colors.warning,
+                                borderColor: ringColor,
                                 left: -halfSize,
                                 transform: [
                                     { rotate: `${Math.min(rotateDeg, 180)}deg` },
@@ -131,29 +144,46 @@ export default function WarmupScreen() {
 
                 {/* Center content */}
                 <View style={styles.centerContent}>
-                    {!isComplete && (
+                    {!isComplete && !isPaused && (
                         <Text style={styles.fireEmoji}>🔥</Text>
                     )}
                     <Text
                         style={[
                             styles.countdown,
                             isComplete && { color: colors.primary },
+                            isPaused && { color: colors.textDim },
                         ]}
                         testID="warmup-countdown"
                     >
                         {isComplete ? 'READY' : timeDisplay}
                     </Text>
-                    {!isComplete && (
+                    {!isComplete && !isPaused && (
                         <Text style={styles.countdownLabel}>remaining</Text>
                     )}
                 </View>
+
+                {/* ── Pause Overlay ─────────────────────────────── */}
+                {isPaused && (
+                    <View style={styles.pauseOverlay} testID="pause-overlay">
+                        <Ionicons
+                            name="play"
+                            size={48}
+                            color={colors.primary}
+                            testID="pause-play-icon"
+                        />
+                        <Text style={styles.pausedText}>PAUSED</Text>
+                        <Text style={styles.tapHint}>Tap to resume</Text>
+                    </View>
+                )}
             </View>
 
             {/* Motivational text */}
             <Text style={styles.motivational}>
                 {isComplete
                     ? 'Warm-up complete. Let\'s crush it! 💪'
-                    : 'Prepare your body. Focus your mind.'}
+                    : isPaused
+                        ? 'Tap anywhere to resume'
+                        : 'Prepare your body. Focus your mind.'}
             </Text>
 
             {/* Start button */}
@@ -169,7 +199,7 @@ export default function WarmupScreen() {
                     testID="start-workout-button"
                 />
             </View>
-        </View>
+        </Pressable>
     );
 }
 
@@ -231,7 +261,7 @@ const styles = StyleSheet.create({
         ...typography.h1,
         fontSize: 52,
         fontWeight: '800',
-        color: colors.warning,
+        color: colors.primary,
         fontVariant: ['tabular-nums'],
     },
     countdownLabel: {
@@ -241,6 +271,30 @@ const styles = StyleSheet.create({
         marginTop: spacing.xs,
         textTransform: 'uppercase',
         letterSpacing: 2,
+    },
+
+    // ── Pause overlay ──
+    pauseOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: colors.overlay,
+        borderRadius: RING_SIZE / 2,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    pausedText: {
+        ...typography.bodyBold,
+        color: colors.primary,
+        fontSize: 16,
+        letterSpacing: 3,
+        marginTop: spacing.s,
+    },
+    tapHint: {
+        ...typography.caption,
+        color: colors.textDim,
+        fontSize: 11,
+        marginTop: spacing.xs,
+        textTransform: 'uppercase',
+        letterSpacing: 1,
     },
 
     // ── Bottom ──

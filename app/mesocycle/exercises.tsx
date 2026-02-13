@@ -20,6 +20,7 @@ export default function ExerciseSelection() {
         autoKey,
         hasManualEdits,
         toggleExercise,
+        markSelectionManual,
         applyRecommendedDefaults,
         clearSelection,
     } = useSelectionStore();

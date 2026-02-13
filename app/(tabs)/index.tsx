@@ -1,17 +1,34 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { PRWidget } from '../../src/components/analytics/PRWidget';
 import { VolumeWidget } from '../../src/components/analytics/VolumeWidget';
 import { AppScreen } from '../../src/components/AppScreen';
 import { Button } from '../../src/components/common/Button';
 import { Card } from '../../src/components/common/Card';
+import { WorkoutDayStatusData, workoutDayStatusRepository } from '../../src/repositories/workoutDayStatusRepository';
 import { workoutRepository } from '../../src/repositories/workoutRepository';
 import { AnalyticsService } from '../../src/services/analyticsService';
 import { useProgramStore } from '../../src/store/programStore';
 import { useUserStore } from '../../src/store/userStore';
 import { borderRadius, colors, spacing, typography } from '../../src/theme/theme';
+
+/**
+ * Check whether all days in a given week are completed.
+ * `weekKey` is the string used as the `week` column, e.g. "1", "2".
+ * `sessionsPerWeek` is how many day-slots exist in that week.
+ */
+function isWeekFullyCompleted(
+    weekKey: string,
+    sessionsPerWeek: number,
+    allStatuses: WorkoutDayStatusData[]
+): boolean {
+    const weekStatuses = allStatuses.filter(
+        (s) => s.week === weekKey && s.status === 'completed'
+    );
+    return weekStatuses.length >= sessionsPerWeek;
+}
 
 export default function PlanScreen() {
     const { activeMacrocycleId, activeMacrocycleId: macroId, macrocycles } = useProgramStore();
@@ -22,9 +39,23 @@ export default function PlanScreen() {
     const [prs, setPrs] = useState<any[]>([]);
     const [volumeData, setVolumeData] = useState<any[]>([]);
 
+    // Week unlock state
+    const [allStatuses, setAllStatuses] = useState<WorkoutDayStatusData[]>([]);
+
     useEffect(() => {
         loadAnalytics();
+        loadStatuses();
     }, []);
+
+    const loadStatuses = async () => {
+        try {
+            const statuses = await workoutDayStatusRepository.getAllStatuses();
+            setAllStatuses(statuses);
+        } catch (e) {
+            console.error('Failed to load all day statuses', e);
+            setAllStatuses([]);
+        }
+    };
 
     const loadAnalytics = async () => {
         try {
@@ -114,30 +145,68 @@ export default function PlanScreen() {
                     <View style={styles.weeksContainer}>
                         {Array.from({ length: meso.weeks + 1 }).map((_, wIndex) => {
                             const isDeload = wIndex === meso.weeks; // Last week (N+1) is Deload
+                            const prevWeekKey = String(wIndex); // previous week number as string
+                            const sessionsPerWeek = meso.sessionsPerWeek || 5;
+
+                            // Week 1 (wIndex===0) is always unlocked.
+                            // Week N is locked unless all days in Week N-1 are completed.
+                            const isWeekLocked = wIndex > 0
+                                && !isWeekFullyCompleted(prevWeekKey, sessionsPerWeek, allStatuses);
+
+                            const handleWeekPress = () => {
+                                if (isWeekLocked) {
+                                    Alert.alert(
+                                        '🔒 Week Locked',
+                                        `Complete all sessions in Week ${wIndex} before starting Week ${wIndex + 1}.`
+                                    );
+                                    return;
+                                }
+                                router.push({
+                                    pathname: `/microcycle/${wIndex + 1}` as any,
+                                    params: {
+                                        type: isDeload ? 'deload' : 'standard',
+                                        title: isDeload ? `W${wIndex + 1} Deload` : `W${wIndex + 1} Standard Microcycle`,
+                                        mesocycleId: meso.id
+                                    }
+                                });
+                            };
+
                             return (
                                 <TouchableOpacity
                                     key={wIndex}
-                                    onPress={() => router.push({
-                                        pathname: `/microcycle/${wIndex + 1}` as any,
-                                        params: {
-                                            type: isDeload ? 'deload' : 'standard',
-                                            title: isDeload ? `W${wIndex + 1} Deload` : `W${wIndex + 1} Standard Microcycle`,
-                                            mesocycleId: meso.id
-                                        }
-                                    })}
-                                    activeOpacity={0.7}
+                                    onPress={handleWeekPress}
+                                    activeOpacity={isWeekLocked ? 1 : 0.7}
                                 >
-                                    <View style={[styles.weekRow, isDeload && styles.deloadRow]}>
-                                        <View style={styles.weekIndicator}>
-                                            <Text style={styles.weekText}>W{wIndex + 1}</Text>
+                                    <View style={[
+                                        styles.weekRow,
+                                        isDeload && styles.deloadRow,
+                                        isWeekLocked && styles.weekRowLocked
+                                    ]}>
+                                        <View style={[
+                                            styles.weekIndicator,
+                                            isWeekLocked && styles.weekIndicatorLocked
+                                        ]}>
+                                            {isWeekLocked
+                                                ? <Ionicons name="lock-closed" size={14} color={colors.textDim} />
+                                                : <Text style={styles.weekText}>W{wIndex + 1}</Text>
+                                            }
                                         </View>
                                         <View style={styles.weekContent}>
-                                            <Text style={[styles.weekLabel, isDeload && styles.deloadText]}>
+                                            <Text style={[
+                                                styles.weekLabel,
+                                                isDeload && styles.deloadText,
+                                                isWeekLocked && styles.weekLabelLocked
+                                            ]}>
                                                 {isDeload ? 'Deload & Recovery' : 'Standard Microcycle'}
                                             </Text>
                                         </View>
-                                        {isDeload && <Ionicons name="battery-charging" size={16} color={colors.accent} />}
-                                        <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} style={{ marginLeft: spacing.s }} />
+                                        {isDeload && !isWeekLocked && <Ionicons name="battery-charging" size={16} color={colors.accent} />}
+                                        <Ionicons
+                                            name={isWeekLocked ? "lock-closed" : "chevron-forward"}
+                                            size={isWeekLocked ? 16 : 20}
+                                            color={isWeekLocked ? colors.textDim : colors.textSecondary}
+                                            style={{ marginLeft: spacing.s }}
+                                        />
                                     </View>
                                 </TouchableOpacity>
                             );
@@ -210,8 +279,11 @@ const styles = StyleSheet.create({
         padding: spacing.s,
         borderRadius: borderRadius.m
     },
+    weekRowLocked: {
+        opacity: 0.45,
+    },
     deloadRow: {
-        backgroundColor: 'rgba(0, 255, 133, 0.1)', // Accent low opacity
+        backgroundColor: 'rgba(0, 255, 133, 0.1)',
         borderColor: colors.accent,
         borderWidth: 1,
     },
@@ -224,8 +296,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginRight: spacing.m,
     },
+    weekIndicatorLocked: {
+        backgroundColor: colors.surfaceHighlight,
+    },
     weekText: { ...typography.caption, color: colors.text, fontWeight: '700' },
     weekContent: { flex: 1 },
     weekLabel: { ...typography.body, color: colors.textSecondary },
+    weekLabelLocked: { color: colors.textDim },
     deloadText: { color: colors.accent, fontWeight: '700' },
 });

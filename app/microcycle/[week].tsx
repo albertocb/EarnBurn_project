@@ -353,17 +353,22 @@ export default function MicrocycleScreen() {
                 <Text style={styles.subtitle}>{subtitle}</Text>
             </View>
 
-            {plan.map((day) => {
+            {plan.map((day, dayIndex) => {
                 const isExpanded = !!expandedDays[day.id];
                 const statusData = dayStatuses[day.id];
                 const isCompleted = statusData?.status === 'completed';
                 const isPartial = statusData?.status === 'partial';
+
+                // Sequential unlock: Day 1 always unlocked, Day N needs Day N-1 completed
+                const isLocked = dayIndex > 0
+                    && dayStatuses[plan[dayIndex - 1].id]?.status !== 'completed';
 
                 // Dynamic Styles based on status
                 let headerStyle: any = [styles.dayHeader];
                 if (isExpanded) headerStyle.push(styles.dayHeaderActive);
                 if (isCompleted) headerStyle.push(styles.dayHeaderCompleted);
                 if (isPartial) headerStyle.push(styles.dayHeaderPartial);
+                if (isLocked) headerStyle.push(styles.dayHeaderLocked);
 
                 return (
                     <View key={day.id} style={styles.dayContainer}>
@@ -372,9 +377,14 @@ export default function MicrocycleScreen() {
                             style={headerStyle}
                         >
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                {isLocked && (
+                                    <View style={styles.lockIconContainer}>
+                                        <Ionicons name="lock-closed" size={16} color={colors.textDim} />
+                                    </View>
+                                )}
                                 <View>
-                                    <Text style={[styles.dayTitle, isCompleted && { color: colors.textSecondary }]}>{day.name}</Text>
-                                    <Text style={styles.dayFocus}>{day.focus}</Text>
+                                    <Text style={[styles.dayTitle, isCompleted && { color: colors.textSecondary }, isLocked && { color: colors.textDim }]}>{day.name}</Text>
+                                    <Text style={[styles.dayFocus, isLocked && { color: colors.textDim }]}>{day.focus}</Text>
                                 </View>
                                 {isCompleted && (
                                     <View style={styles.statusBadgeCompleted}>
@@ -390,14 +400,14 @@ export default function MicrocycleScreen() {
                                 )}
                             </View>
                             <Ionicons
-                                name={isExpanded ? "chevron-up" : "chevron-down"}
-                                size={20}
-                                color={colors.textSecondary}
+                                name={isLocked ? "lock-closed" : isExpanded ? "chevron-up" : "chevron-down"}
+                                size={isLocked ? 16 : 20}
+                                color={isLocked ? colors.textDim : colors.textSecondary}
                             />
                         </Pressable>
 
                         {isExpanded && (
-                            <View style={[styles.exercisesList, (isCompleted || isPartial) && { opacity: 0.8 }]}>
+                            <View style={[styles.exercisesList, (isCompleted || isPartial) && { opacity: 0.8 }, isLocked && { opacity: 0.45 }]}>
                                 {day.exercises.map((slot) => {
                                     const activeEx = getActiveExercise(slot);
                                     const isSwapped = !!swaps[slot.id];
@@ -424,18 +434,18 @@ export default function MicrocycleScreen() {
                                                         <Pressable
                                                             onPress={() => undoSwap(slot.id)}
                                                             style={styles.undoButton}
-                                                            disabled={isCompleted || isPartial} // Disable swaps if done
+                                                            disabled={isCompleted || isPartial || isLocked}
                                                         >
-                                                            <Ionicons name="refresh" size={18} color={isCompleted ? colors.textDim : colors.accent} />
-                                                            <Text style={[styles.undoText, isCompleted && { color: colors.textDim }]}>Undo</Text>
+                                                            <Ionicons name="refresh" size={18} color={(isCompleted || isLocked) ? colors.textDim : colors.accent} />
+                                                            <Text style={[styles.undoText, (isCompleted || isLocked) && { color: colors.textDim }]}>Undo</Text>
                                                         </Pressable>
                                                     ) : (
                                                         <Pressable
                                                             onPress={() => handleSwapPress(slot)}
                                                             style={styles.swapButton}
-                                                            disabled={isCompleted || isPartial} // Disable swaps if done
+                                                            disabled={isCompleted || isPartial || isLocked}
                                                         >
-                                                            <Ionicons name="swap-horizontal" size={20} color={isCompleted ? colors.textDim : colors.secondary} />
+                                                            <Ionicons name="swap-horizontal" size={20} color={(isCompleted || isLocked) ? colors.textDim : colors.secondary} />
                                                         </Pressable>
                                                     )}
                                                 </View>
@@ -444,17 +454,29 @@ export default function MicrocycleScreen() {
                                     );
                                 })}
 
-                                <Button
-                                    title={statusData ? (isCompleted ? "Completed" : "Incomplete") : "Start This Workout"}
-                                    onPress={() => handleStartPress(day, statusData)}
-                                    style={{ marginTop: spacing.m, opacity: statusData ? 0.6 : 1 }}
-                                    variant={statusData ? 'secondary' : 'primary'}
-                                    disabled={false} // Always clickable to allow Override
-                                />
-                                {statusData && (
-                                    <Text style={{ textAlign: 'center', marginTop: 8, ...typography.caption, color: colors.textDim }}>
-                                        Tap to re-log (Duplicate)
-                                    </Text>
+                                {isLocked ? (
+                                    <Button
+                                        title={`🔒  Complete Day ${dayIndex} First`}
+                                        onPress={() => { }}
+                                        style={{ marginTop: spacing.m, opacity: 0.4 }}
+                                        variant="secondary"
+                                        disabled={true}
+                                    />
+                                ) : (
+                                    <>
+                                        <Button
+                                            title={statusData ? (isCompleted ? "Completed" : "Incomplete") : "Start This Workout"}
+                                            onPress={() => handleStartPress(day, statusData)}
+                                            style={{ marginTop: spacing.m, opacity: statusData ? 0.6 : 1 }}
+                                            variant={statusData ? 'secondary' : 'primary'}
+                                            disabled={false}
+                                        />
+                                        {statusData && (
+                                            <Text style={{ textAlign: 'center', marginTop: 8, ...typography.caption, color: colors.textDim }}>
+                                                Tap to re-log (Duplicate)
+                                            </Text>
+                                        )}
+                                    </>
                                 )}
                             </View>
                         )}
@@ -565,18 +587,30 @@ const styles = StyleSheet.create({
         borderBottomRightRadius: 0,
         backgroundColor: colors.surfaceHighlight,
     },
+    dayHeaderLocked: {
+        opacity: 0.5,
+    },
+    lockIconContainer: {
+        marginRight: spacing.s,
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: colors.surfaceHighlight,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     dayTitle: { ...typography.h3, color: colors.text },
     dayFocus: { ...typography.caption, color: colors.secondary },
 
     exercisesList: {
-        backgroundColor: colors.surface, // Slightly darker than card
+        backgroundColor: colors.surface,
         borderBottomLeftRadius: borderRadius.m,
         borderBottomRightRadius: borderRadius.m,
         padding: spacing.s,
     },
     exerciseCard: {
         marginBottom: spacing.s,
-        backgroundColor: '#252525', // Slightly lighter than surface
+        backgroundColor: '#252525',
         borderWidth: 0,
     },
     exerciseRow: {
@@ -592,7 +626,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginTop: spacing.xs,
-        backgroundColor: 'rgba(212, 255, 0, 0.1)', // Primary low opacity
+        backgroundColor: 'rgba(212, 255, 0, 0.1)',
         alignSelf: 'flex-start',
         paddingHorizontal: spacing.s,
         paddingVertical: 2,

@@ -79,5 +79,11 @@ export const workoutDayStatusRepository = {
         const map: Record<string, WorkoutDayStatusData> = {};
         for (const r of results) map[r.dayId] = r as WorkoutDayStatusData;
         return map;
+    },
+
+    getAllStatuses: async () => {
+        await ensureReady();
+        const results = await db.select().from(workoutDayStatus);
+        return results as WorkoutDayStatusData[];
     }
 };
